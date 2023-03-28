@@ -1,302 +1,140 @@
+import math
 import tkinter as tk
-from tkinter import ttk
+
 
 class Board():
     def __init__(self):
+        self.hex_size = 50
+        self.hexagons = []
+        self.hexagon_colors = []
+        self.canvas = None
+        self.selected_hexagon = None
 
-        self.cell_w = 50
-        self.cell_h = 50
-
-    def run1(self):
+    def run(self):
         root = tk.Tk()
-        root.title="HexTakeover"
-        # Create a canvas widget
-        canvas = tk.Canvas(root, width=400, height=400)
-        canvas.pack()
-        # Define the size of each cell in the matrix
-        cell_width = 50
-        cell_height = 50
+        root.title("HexTakeover")
+        self.canvas = tk.Canvas(root, width=1400, height=800)
+        self.canvas.pack()
 
-        for i in range(8):
-            for j in range(8):
-                x1 = i * cell_width
-                y1 = j * cell_height
-                x2 = x1 + cell_width
-                y2 = y1 + cell_height
+        for i in range(20):
+            for j in range(10):
+                x = i * 1.5 * self.hex_size
+                y = j * math.sqrt(3) * self.hex_size + ((i % 2) * math.sqrt(3) / 2 * self.hex_size)
                 fill_color = 'white'
-
-                if i == 1 and j == 6:
-                    fill_color = 'red'
-
-                if i == 2 and j == 7:
-                    fill_color = 'red'
-
-                if i == 3 and j == 6:
-                    fill_color = 'red'
-
-                if i == 5 and j == 1:
-                    fill_color = 'blue'
-                if i == 4 and j == 0:
-                    fill_color = 'blue'
-                if i == 6 and j == 0:
-                    fill_color = 'blue'
-
-
-                canvas.create_rectangle(x1, y1, x2, y2, fill=fill_color, outline='black')
-        root.mainloop()
-
-    def run2(self):
-        root = tk.Tk()
-        root.title = "HexTakeover"
-        # Create a canvas widget
-        canvas = tk.Canvas(root, width=400, height=400)
-        canvas.pack()
-        # Define the size of each cell in the matrix
-        cell_width = 50
-        cell_height = 50
-
-        for i in range(8):
-            for j in range(8):
-                x1 = i * cell_width
-                y1 = j * cell_height
-                x2 = x1 + cell_width
-                y2 = y1 + cell_height
-                fill_color = 'white'
-                outline_w = 1
                 outline_color = 'black'
 
-                if i == 1 and j == 6:
+                if i == 5 and j == 5:
                     fill_color = 'red'
-
-                if i == 2 and j == 7:
-                    fill_color = 'red'
-
-                if i == 3 and j == 6:
-                    fill_color = 'red'
-                    outline_color = 'black'
-                    outline_w = 5
-
-
-
-                if i == 5 and j == 1:
-                    fill_color = 'blue'
-                if i == 4 and j == 0:
-                    fill_color = 'blue'
-                if i == 6 and j == 0:
+                elif i == 10 and j == 5:
                     fill_color = 'blue'
 
-
-
-
-                canvas.create_rectangle(x1, y1, x2, y2, fill=fill_color, outline=outline_color, width=outline_w)
-
-
-        canvas.itemconfigure((4*8)+6, fill='#8FED8F')
-        canvas.itemconfigure((3*8)+6, fill='#8FED8F')
-        canvas.itemconfigure((2*8)+6, fill='#8FED8F')
-        canvas.itemconfigure((4*8)+7, fill='#8FED8F')
-        canvas.itemconfigure((4*8)+8, fill='#8FED8F')
-        canvas.itemconfigure((2*8)+7, fill='#8FED8F')
-        canvas.itemconfigure((3*8)+8, fill='#8FED8F')
-
-        canvas.itemconfigure((2*8)+5, fill='#FFC878')
-        canvas.itemconfigure((3*8)+5, fill='#FFC878')
-        canvas.itemconfigure((4*8)+5, fill='#FFC878')
-        canvas.itemconfigure((1*8)+6, fill='#FFC878')
-        canvas.itemconfigure((5*8)+6, fill='#FFC878')
-        canvas.itemconfigure((5*8)+7, fill='#FFC878')
-        canvas.itemconfigure((5*8)+8, fill='#FFC878')
-
-        root.mainloop()
-
-
-    def run3(self):
-        root = tk.Tk()
-        root.title = "HexTakeover"
-        # Create a canvas widget
-        canvas = tk.Canvas(root, width=400, height=400)
-        canvas.pack()
-        # Define the size of each cell in the matrix
-        cell_width = 50
-        cell_height = 50
-
-        for i in range(8):
-            for j in range(8):
-                x1 = i * cell_width
-                y1 = j * cell_height
-                x2 = x1 + cell_width
-                y2 = y1 + cell_height
-                fill_color = 'white'
-
-                if i == 1 and j == 6:
-                    fill_color = 'red'
-                if i == 2 and j == 7:
-                    fill_color = 'red'
-                if i == 3 and j == 6:
-                    fill_color = 'red'
-                if i == 4 and j == 5:
-                    fill_color = 'red'
-
-
-                if i == 5 and j == 1:
+                elif i == 11 and j == 3:
                     fill_color = 'blue'
-                if i == 4 and j == 0:
+                elif i == 7 and j == 3:
                     fill_color = 'blue'
-                if i == 6 and j == 0:
+                elif i == 4 and j == 3:
                     fill_color = 'blue'
-
-
-
-                canvas.create_rectangle(x1, y1, x2, y2, fill=fill_color, outline='black')
-        root.mainloop()
-
-    def run4(self):
-        root = tk.Tk()
-        root.title = "HexTakeover"
-        # Create a canvas widget
-        canvas = tk.Canvas(root, width=400, height=400)
-        canvas.pack()
-        # Define the size of each cell in the matrix
-        cell_width = 50
-        cell_height = 50
-
-        for i in range(8):
-            for j in range(8):
-                x1 = i * cell_width
-                y1 = j * cell_height
-                x2 = x1 + cell_width
-                y2 = y1 + cell_height
-                fill_color = 'white'
-
-                if i == 1 and j == 6:
-                    fill_color = 'red'
-                if i == 2 and j == 7:
-                    fill_color = 'red'
-                if i == 3 and j == 6:
+                else:
                     fill_color = 'white'
-                if i == 4 and j == 4:
-                    fill_color = 'red'
 
+                if i==1 or i ==0 or i==17 or i ==18 or j==0 or j ==9 or j== 8 or j==7 :
+                    fill_color = None
+                    outline_color = None
 
-                if i == 5 and j == 1:
-                    fill_color = 'blue'
-                if i == 4 and j == 0:
-                    fill_color = 'blue'
-                if i == 6 and j == 0:
-                    fill_color = 'blue'
+                coords = [
+                    x - self.hex_size, y,
+                    x - self.hex_size / 2, y + math.sqrt(3) / 2 * self.hex_size,
+                    x + self.hex_size / 2, y + math.sqrt(3) / 2 * self.hex_size,
+                    x + self.hex_size, y,
+                    x + self.hex_size / 2, y - math.sqrt(3) / 2 * self.hex_size,
+                    x - self.hex_size / 2, y - math.sqrt(3) / 2 * self.hex_size
+                ]
 
+                hexagon = self.canvas.create_polygon(coords, fill=fill_color, outline=outline_color)
+                self.hexagons.append(hexagon)
+                self.hexagon_colors.append(fill_color)
 
-
-                canvas.create_rectangle(x1, y1, x2, y2, fill=fill_color, outline='black')
-        root.mainloop()
-
-    def run5(self):
-        root = tk.Tk()
-        root.title = "HexTakeover"
-        # Create a canvas widget
-        canvas = tk.Canvas(root, width=400, height=400)
-        canvas.pack()
-        # Define the size of each cell in the matrix
-        cell_width = 50
-        cell_height = 50
-
-        for i in range(8):
-            for j in range(8):
-                x1 = i * cell_width
-                y1 = j * cell_height
-                x2 = x1 + cell_width
-                y2 = y1 + cell_height
-                fill_color = 'white'
-                outline_w = 1
-                outline_color = 'black'
-
-                if i == 1 and j == 6:
-                    fill_color = 'red'
-
-                if i == 2 and j == 7:
-                    fill_color = 'red'
-
-
-                if i == 4 and j == 4:
-                    fill_color = 'red'
-
-
-
-                if i == 5 and j == 1:
-                    fill_color = 'blue'
-                if i == 4 and j == 0:
-                    fill_color = 'blue'
-                if i == 6 and j == 0:
-                    fill_color = 'blue'
-
-
-
-
-                canvas.create_rectangle(x1, y1, x2, y2, fill=fill_color, outline=outline_color, width=outline_w)
-
-
-        canvas.itemconfigure((5*8)+1, fill='#8FED8F')
-        canvas.itemconfigure((4*8)+2, fill='#8FED8F')
-        canvas.itemconfigure((6*8)+2, fill='#8FED8F')
-        canvas.itemconfigure((4*8)+3, fill='#8FED8F')
-        canvas.itemconfigure((5*8)+3, fill='#8FED8F')
-        canvas.itemconfigure((6*8)+3, fill='#8FED8F')
-
-        canvas.itemconfigure((3*8)+1, fill='#FFC878')
-        canvas.itemconfigure((3*8)+2, fill='#FFC878')
-        canvas.itemconfigure((3*8)+3, fill='#FFC878')
-        canvas.itemconfigure((4*8)+4, fill='#FFC878')
-        canvas.itemconfigure((5*8)+4, fill='#FFC878')
-        canvas.itemconfigure((6*8)+4, fill='#FFC878')
-        canvas.itemconfigure((7 * 8) + 1, fill='#FFC878')
-        canvas.itemconfigure((7 * 8) + 2, fill='#FFC878')
-        canvas.itemconfigure((7 * 8) + 3, fill='#FFC878')
+                self.canvas.tag_bind(hexagon, '<Button-1>', lambda event, hexagon=hexagon: self.on_hexagon_clicked(event, hexagon))
 
         root.mainloop()
 
-    def run6(self):
-        root = tk.Tk()
-        root.title = "HexTakeover"
-        # Create a canvas widget
-        canvas = tk.Canvas(root, width=400, height=400)
-        canvas.pack()
-        # Define the size of each cell in the matrix
-        cell_width = 50
-        cell_height = 50
+    def on_hexagon_clicked(self, event, hexagon):
+        # Change the color of all green and yellow hexagons to white
+        for i in range(len(self.hexagon_colors)):
+            if self.hexagon_colors[i] == 'green' or self.hexagon_colors[i] == 'yellow':
+                self.canvas.itemconfig(self.hexagons[i], fill='white')
+                self.hexagon_colors[i] = 'white'
 
-        for i in range(8):
-            for j in range(8):
-                x1 = i * cell_width
-                y1 = j * cell_height
-                x2 = x1 + cell_width
-                y2 = y1 + cell_height
-                fill_color = 'white'
+        hexagon_index = self.hexagons.index(hexagon)
 
-                if i == 1 and j == 6:
-                    fill_color = 'red'
-                if i == 2 and j == 7:
-                    fill_color = 'red'
+        hexagon_color = self.hexagon_colors[hexagon_index]
 
-                if i == 4 and j == 4:
-                    fill_color = 'blue'
+        # Change the color of the clicked hexagon to green if it's not already green
+        if hexagon_color == 'blue':
 
 
-                if i == 4 and j == 3:
-                    fill_color = 'blue'
-                if i == 4 and j == 0:
-                    fill_color = 'blue'
-                if i == 6 and j == 0:
-                    fill_color = 'blue'
+            
+
+            # Change the color of the adjacent hexagons to green if they are not black and not already green
+            adjacent_hexagons = self.get_adjacent_hexagons(hexagon_index)
+            for adjacent_hexagon in adjacent_hexagons:
+                self.canvas.itemconfig(self.hexagons[adjacent_hexagon], fill='green')
+                self.hexagon_colors[adjacent_hexagon] = 'green'
+                if self.hexagon_colors[adjacent_hexagon] is not None and self.hexagon_colors[adjacent_hexagon] != 'black' and self.hexagon_colors[adjacent_hexagon] != 'blue' :
+
+                    # Change the color of the hexagons adjacent to the adjacent hexagon to yellow if they are not black and not already green or yellow
+                    adjacent_adjacent_hexagons = self.get_adjacent_hexagons(adjacent_hexagon)
+                    for adjacent_adjacent_hexagon in adjacent_adjacent_hexagons:
+                        if self.hexagon_colors[adjacent_adjacent_hexagon] is not None and self.hexagon_colors[adjacent_adjacent_hexagon] != 'black' and self.hexagon_colors[adjacent_adjacent_hexagon] != 'blue'  and self.hexagon_colors[adjacent_adjacent_hexagon] != 'green' and self.hexagon_colors[adjacent_adjacent_hexagon] != 'yellow':
+                            self.canvas.itemconfig(self.hexagons[adjacent_adjacent_hexagon], fill='yellow')
+                            self.hexagon_colors[adjacent_adjacent_hexagon] = 'yellow'
+
+            
+            self.canvas.itemconfig(self.hexagons[hexagon_index], fill='blue')
+            # Update the hexagon_colors list with the new color
+            self.hexagon_colors[hexagon_index] = 'blue'
 
 
 
-                canvas.create_rectangle(x1, y1, x2, y2, fill=fill_color, outline='black')
-        root.mainloop()
+    def get_adjacent_hexagons(self, hexagon_index):
+        adjacent_hexagons = []
 
-test = Board()
-test.run1()
-test.run2()
-test.run3()
-test.run4()
-test.run5()
-test.run6()
+        if hexagon_index // 10 %2== 0:
+            if hexagon_index - 1 >= 0:
+                adjacent_hexagons.append(hexagon_index - 1)
+            if hexagon_index + 1 < len(self.hexagons):
+                adjacent_hexagons.append(hexagon_index + 1)
+            
+            if hexagon_index - 1 >= 0:
+                adjacent_hexagons.append(hexagon_index - 10)
+            if hexagon_index + 1 < len(self.hexagons):
+                adjacent_hexagons.append(hexagon_index + 10)
+
+            if hexagon_index - 1 >= 0:
+                adjacent_hexagons.append(hexagon_index - 11)
+            if hexagon_index + 1 < len(self.hexagons):
+                adjacent_hexagons.append(hexagon_index + 9)
+        else:
+            if hexagon_index - 1 >= 0:
+                adjacent_hexagons.append(hexagon_index - 1)
+            if hexagon_index + 1 < len(self.hexagons):
+                adjacent_hexagons.append(hexagon_index + 1)
+            
+            if hexagon_index - 1 >= 0:
+                adjacent_hexagons.append(hexagon_index - 10)
+            if hexagon_index + 1 < len(self.hexagons):
+                adjacent_hexagons.append(hexagon_index + 10)
+
+            if hexagon_index - 1 >= 0:
+                adjacent_hexagons.append(hexagon_index - 9)
+            if hexagon_index + 1 < len(self.hexagons):
+                adjacent_hexagons.append(hexagon_index + 11)
+        return adjacent_hexagons
+    
+
+
+
+
+
+board = Board()
+board.run()
