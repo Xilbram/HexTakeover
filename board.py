@@ -5,15 +5,15 @@ import tkinter as tk
 class Board:
 
     # constants
-    HEX_SIDE_LENGTH = 30
-    MAP_WIDTH = 30
+    HEX_SIDE_LENGTH = 50
+    MAP_WIDTH = 20
     MAP_HEIGHT = 10
     COLORS = {
         'player_1': '#4260f5',
         'player_2': '#f55142',
         'inner_adjacent': '#55be4e',
         'outer_adjacent': '#cb7409',
-        'outline': '#000000',
+        'outline': '#303030',
         'unselected': '#ffffff',
         'out_of_map': '#303030'
     }
@@ -39,11 +39,20 @@ class Board:
                 outline_color = self.COLORS['outline']
 
                 condicoes = {
-                    (5, 5): self.COLORS['player_2'],
-                    (10, 5): self.COLORS['player_1'],
-                    (11, 3): self.COLORS['player_1'],
-                    (7, 3): self.COLORS['player_1'],
-                    (16, 3): self.COLORS['player_1']
+                    (3, 3): self.COLORS['player_2'],
+                    (3, 4): self.COLORS['player_2'],
+                    (4, 3): self.COLORS['player_2'],
+                    (4, 4): self.COLORS['player_2'],
+                    (4, 5): self.COLORS['player_2'],
+                    (5, 3): self.COLORS['player_2'],
+                    (5, 4): self.COLORS['player_2'],
+                    (13, 3): self.COLORS['player_1'],
+                    (13, 4): self.COLORS['player_1'],
+                    (14, 3): self.COLORS['player_1'],
+                    (14, 4): self.COLORS['player_1'],
+                    (14, 5): self.COLORS['player_1'],
+                    (15, 3): self.COLORS['player_1'],
+                    (15, 4): self.COLORS['player_1'],
                 }
 
                 if (i, j) in condicoes:
@@ -52,8 +61,9 @@ class Board:
                     fill_color = self.COLORS['unselected']
 
                 # defining map borders
-                if i < 3 or i > 16 or j < 2 or j > 6:
+                if i < 2 or i > 16 or j < 2 or j > 6 :
                     fill_color = self.COLORS['out_of_map']
+
 
                 # represent the vertices (start at the left vertex and continue counterclockwise)
                 vertices = [
@@ -71,7 +81,7 @@ class Board:
                 self.hexagon_colors.append(fill_color)
 
                 self.canvas.tag_bind(hexagon, '<Button-1>',
-                                     lambda event, hexagon=hexagon: self.on_hexagon_clicked(event, hexagon))
+                lambda event, hexagon=hexagon: self.on_hexagon_clicked(event, hexagon))
 
         root.mainloop()
 
@@ -91,11 +101,13 @@ class Board:
             # Change the color of the adjacent hexagons to green if they are not black and not already green
             adjacent_hexagons = self.get_adjacent_hexagons(hexagon_index)
             for adjacent_hexagon in adjacent_hexagons:
-                self.canvas.itemconfig(self.hexagons[adjacent_hexagon], fill=self.COLORS['inner_adjacent'])
-                self.hexagon_colors[adjacent_hexagon] = self.COLORS['inner_adjacent']
-                if self.hexagon_colors[adjacent_hexagon] is not None and self.hexagon_colors[
-                    adjacent_hexagon] != self.COLORS['out_of_map'] and self.hexagon_colors[adjacent_hexagon] != self.COLORS['player_1']:
 
+                if self.hexagon_colors[adjacent_hexagon] is not None and self.hexagon_colors[
+                    adjacent_hexagon] != self.COLORS['out_of_map']:
+
+                    if self.hexagon_colors[adjacent_hexagon] != self.COLORS['player_1']:
+                        self.canvas.itemconfig(self.hexagons[adjacent_hexagon], fill=self.COLORS['inner_adjacent'])
+                        self.hexagon_colors[adjacent_hexagon] = self.COLORS['inner_adjacent']
                     # Change the color of the hexagons adjacent to the adjacent hexagon to yellow if they are not black and not already green or yellow
                     adjacent_adjacent_hexagons = self.get_adjacent_hexagons(adjacent_hexagon)
                     for adjacent_adjacent_hexagon in adjacent_adjacent_hexagons:
@@ -106,6 +118,7 @@ class Board:
                             adjacent_adjacent_hexagon] != self.COLORS['outer_adjacent']:
                             self.canvas.itemconfig(self.hexagons[adjacent_adjacent_hexagon], fill=self.COLORS['outer_adjacent'])
                             self.hexagon_colors[adjacent_adjacent_hexagon] = self.COLORS['outer_adjacent']
+                    
 
             self.canvas.itemconfig(self.hexagons[hexagon_index], fill=self.COLORS['player_1'])
             # Update the hexagon_colors list with the new color
