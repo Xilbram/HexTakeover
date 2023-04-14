@@ -28,10 +28,10 @@ class Board:
         self.selected_hexagon = None
         self.canvas = None
         self.run()
-        self.add_listener()	# Pyng use case "add listener"
-        self.send_connect()	# Pyng use case "send connect"
+        
 
     def run(self):
+        
         root = tk.Tk()
         root.title("Hex Takeover")
 
@@ -102,6 +102,9 @@ class Board:
                 self.hexagon_colors.append(fill_color)
 
                 self.canvas.tag_bind(hexagon, '<Button-1>', lambda e, place=hexagon: self.on_hexagon_clicked(place))
+
+        self.add_listener()	# Pyng use case "add listener"
+        self.send_connect()	# Pyng use case "send connect"
         root.mainloop()
 
 
@@ -227,4 +230,7 @@ class Board:
         print('*************** match_id: ', match.match_id)
 
     def receive_move(self, move):	# Pyng use case "receive move"
+        pass
+
+    def receive_match_requested_success(self):
         pass
