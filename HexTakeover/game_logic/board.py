@@ -1,6 +1,8 @@
 import math
 import tkinter as tk
 
+from py_netgames_client.tkinter_client.PyNetgamesServerProxy import PyNetgamesServerProxy
+from py_netgames_client.tkinter_client.PyNetgamesServerListener import PyNetgamesServerListener
 
 class Board:
 
@@ -26,6 +28,8 @@ class Board:
         self.selected_hexagon = None
         self.canvas = None
         self.run()
+        self.add_listener()	# Pyng use case "add listener"
+        self.send_connect()	# Pyng use case "send connect"
 
     def run(self):
         root = tk.Tk()
@@ -194,7 +198,33 @@ class Board:
             if self.hexagon_colors[k] == self.COLORS['player_1_selected']:
                 self.canvas.itemconfig(self.hexagons[k], fill=self.COLORS['unselected'])
                 self.hexagon_colors[k] = self.COLORS['unselected']
-        
 
-#board = Board()
-#board.run()
+#----------------------- Pynetgames ----------------------------------
+
+    def add_listener(self):		# Pyng use case "add listener"
+        self.server_proxy = PyNetgamesServerProxy()
+        self.server_proxy.add_listener(self)
+
+    def send_connect(self):	# Pyng use case "send connect"
+        self.server_proxy.send_connect("wss://py-netgames-server.fly.dev")
+
+    def send_match(self):	# Pyng use case "send match"
+        self.server_proxy.send_match(2)
+
+    def receive_connection_success(self):	# Pyng use case "receive connection"
+        print('*************** CONECTADO *******************')
+        self.send_match()
+
+    def receive_disconnect(self):	# Pyng use case "receive disconnect"
+        pass
+		
+    def receive_error(self, error):	# Pyng use case "receive error"
+        pass
+
+    def receive_match(self, match):	# Pyng use case "receive match"
+        print('*************** PARTIDA INICIADA *******************')
+        print('*************** ORDEM: ', match.position)
+        print('*************** match_id: ', match.match_id)
+
+    def receive_move(self, move):	# Pyng use case "receive move"
+        pass
