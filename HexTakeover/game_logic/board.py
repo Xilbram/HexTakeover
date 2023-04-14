@@ -27,6 +27,8 @@ class Board:
         self.hexagon_colors = []
         self.selected_hexagon = None
         self.canvas = None
+        self.message_label = None
+        self.message = "Iniciando o Jogo"
         self.run()
         
 
@@ -49,10 +51,14 @@ class Board:
 
         root.config(menu=menu_bar)
 
-        self.canvas = tk.Canvas(root, width=1400, height=800)
+        self.frame_game = tk.Frame(root, width=1400, height=800)
+        self.frame_game.pack()
+        self.canvas = tk.Canvas(self.frame_game, width=1400, height=800)
         self.canvas.pack()
-
         hexagon_height = (self.HEX_SIDE_LENGTH * math.sqrt(3)) / 2
+
+
+
 
         for i in range(self.MAP_WIDTH):
             for j in range(self.MAP_HEIGHT):
@@ -103,13 +109,18 @@ class Board:
 
                 self.canvas.tag_bind(hexagon, '<Button-1>', lambda e, place=hexagon: self.on_hexagon_clicked(place))
 
+        # Criando widget Label para exibir mensagens
+        self.message_label = tk.Label(root, text=self.message, font=("Arial", 30), bg='#303030', fg='white')
+        self.message_label.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
+
+
+
         self.add_listener()	# Pyng use case "add listener"
         self.send_connect()	# Pyng use case "send connect"
         root.mainloop()
 
 
     def on_hexagon_clicked(self, hexagon):
-
         cor = self.canvas.itemcget(hexagon, 'fill')
         if cor == self.COLORS['player_1'] or self.COLORS['player_1_selected'] or self.COLORS['player_2'] or self.COLORS['player_2_selected'] :
             self.select_hexagon(hexagon)
@@ -215,7 +226,7 @@ class Board:
         self.server_proxy.send_match(2)
 
     def receive_connection_success(self):	# Pyng use case "receive connection"
-        print('*************** CONECTADO *******************')
+        self.message_label.config(text="Conectado")
         self.send_match()
 
     def receive_disconnect(self):	# Pyng use case "receive disconnect"
@@ -234,3 +245,4 @@ class Board:
 
     def receive_match_requested_success(self):
         pass
+
