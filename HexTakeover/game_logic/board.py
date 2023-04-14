@@ -25,6 +25,7 @@ class Board:
         self.hexagon_colors = []
         self.selected_hexagon = None
         self.canvas = None
+        self.run()
 
     def run(self):
         root = tk.Tk()
@@ -189,12 +190,11 @@ class Board:
         hexagon_index = self.hexagons.index(hexagon)
         self.canvas.itemconfig(hexagon, fill=self.COLORS['player_1'])
         self.hexagon_colors[hexagon_index] = self.COLORS['player_1']
-        for i in range(len(self.hexagon_colors)):
-            if self.hexagon_colors[i] == self.COLORS['player_1_selected']:
-                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS['unselected'])
-                self.hexagon_colors[i] = self.COLORS['unselected']
-
+        for k in range(len(self.hexagon_colors)):
+            if self.hexagon_colors[k] == self.COLORS['player_1_selected']:
+                self.canvas.itemconfig(self.hexagons[k], fill=self.COLORS['unselected'])
+                self.hexagon_colors[k] = self.COLORS['unselected']
         
 
-board = Board()
-board.run()
+#board = Board()
+#board.run()
