@@ -8,7 +8,7 @@
 1. Certifique-se de que [pipenv](https://pipenv.pypa.io/en/latest/install/#pragmatic-installation-of-pipenv) está instalado.
 1.  A partir da pasta raiz do template, execute `python -m pipenv install` para criar um ambiente Python com as dependências descritas no [Pipfile](./Pipfile) já instaladas
 1. A partir da pasta raiz do template, execute `python -m pipenv shell` para iniciar um terminal no contexto do interpretador Python criado no passo anterior. Então, execute `python -m project_name` para rodar o código partindo de [\_\_main\_\_.py](./project_name/__main__.py). 
-    * Se houver renomeado a pasta project_name conforme o segundo passo, troque-a nos comandos pelo novo nome da pasta.
+    * Se houver renomeado a pasta `project_name` conforme o segundo passo, troque-a nos comandos pelo novo nome da pasta.
 1. A partir de agora é possível seguir com a implementação. Como sugestão, o pacote [game_logic](./project_name/game_logic/) pode ser utilizado para as classes da lógica do jogo em si. 
 
 ## Uso com IDEs
