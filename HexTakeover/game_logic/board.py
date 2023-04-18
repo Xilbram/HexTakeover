@@ -3,6 +3,7 @@ import tkinter as tk
 
 from py_netgames_client.tkinter_client.PyNetgamesServerProxy import PyNetgamesServerProxy
 from py_netgames_client.tkinter_client.PyNetgamesServerListener import PyNetgamesServerListener
+from py_netgames_model.messaging.message import MatchStartedMessage, MoveMessage
 
 class Board:
 
@@ -40,14 +41,9 @@ class Board:
         # criando o menu
         menu_bar = tk.Menu(root)
         connect_menu = tk.Menu(menu_bar, tearoff=0)
-        connect_menu.add_command(label="Conectar ao servidor")
-        connect_menu.add_command(label="Desconectar do servidor")
-        menu_bar.add_cascade(label="Conectar", menu=connect_menu)
-
-        game_menu = tk.Menu(menu_bar, tearoff=0)
-        game_menu.add_command(label="Iniciar jogo")
-        game_menu.add_command(label="Abandonar partida")
-        menu_bar.add_cascade(label="Jogo", menu=game_menu)
+        menu_bar.add_cascade(label="Conectar ao servidor", command=self.send_connect)
+        menu_bar.add_cascade(label="Desconectar", command=self.send_disconnect)
+        menu_bar.add_cascade(label="Iniciar jogo", command=self.send_match)
 
         root.config(menu=menu_bar)
 
@@ -253,6 +249,9 @@ class Board:
 
     def send_connect(self):	# Pyng use case "send connect"
         self.server_proxy.send_connect("wss://py-netgames-server.fly.dev")
+
+    def send_disconnect(self):	# Pyng use case "send connect"
+        self.server_proxy.send_disconnect()
 
     def send_match(self):	# Pyng use case "send match"
         self.server_proxy.send_match(2)
