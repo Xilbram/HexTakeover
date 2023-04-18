@@ -1,5 +1,6 @@
 import math
 import tkinter as tk
+from typing import Dict
 
 from py_netgames_client.tkinter_client.PyNetgamesServerProxy import PyNetgamesServerProxy
 from py_netgames_client.tkinter_client.PyNetgamesServerListener import PyNetgamesServerListener
@@ -14,8 +15,8 @@ class Board:
     COLORS = {
         'player_1': '#4260f5',
         'player_1_selected': '#4290f5',
-        'player_2': '#f55142',
-        'player_2_selected': '#4260f5',
+        'player_0': '#f55142',
+        'player_0_selected': '#f54290',
         'inner_adjacent': '#55be4e',
         'outer_adjacent': '#cb7409',
         'outline': '#303030',
@@ -30,6 +31,9 @@ class Board:
         self.canvas = None
         self.message_label = None
         self.message = "Iniciando o Jogo"
+        self.local_player_id = None
+        self.remote_player_id = None
+        self.current_player_id = 0
         self.run()
         
 
@@ -55,7 +59,6 @@ class Board:
 
 
 
-
         for i in range(self.MAP_WIDTH):
             for j in range(self.MAP_HEIGHT):
                 x = i * 1.5 * self.HEX_SIDE_LENGTH
@@ -63,13 +66,13 @@ class Board:
                 outline_color = self.COLORS['outline']
 
                 player_positions = {
-                    (3, 3): self.COLORS['player_2'],
-                    (3, 4): self.COLORS['player_2'],
-                    (4, 3): self.COLORS['player_2'],
-                    (4, 4): self.COLORS['player_2'],
-                    (4, 5): self.COLORS['player_2'],
-                    (5, 3): self.COLORS['player_2'],
-                    (5, 4): self.COLORS['player_2'],
+                    (3, 3): self.COLORS['player_0'],
+                    (3, 4): self.COLORS['player_0'],
+                    (4, 3): self.COLORS['player_0'],
+                    (4, 4): self.COLORS['player_0'],
+                    (4, 5): self.COLORS['player_0'],
+                    (5, 3): self.COLORS['player_0'],
+                    (5, 4): self.COLORS['player_0'],
                     (13, 3): self.COLORS['player_1'],
                     (13, 4): self.COLORS['player_1'],
                     (14, 3): self.COLORS['player_1'],
@@ -110,25 +113,28 @@ class Board:
         self.message_label.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
 
 
-
         self.add_listener()	# Pyng use case "add listener"
         self.send_connect()	# Pyng use case "send connect"
         root.mainloop()
 
 
     def on_hexagon_clicked(self, hexagon):
-        cor = self.canvas.itemcget(hexagon, 'fill')
-        if cor == self.COLORS['player_1'] or self.COLORS['player_1_selected'] or self.COLORS['player_2'] or self.COLORS['player_2_selected'] :
-            self.select_hexagon(hexagon)
-        if cor == self.COLORS['inner_adjacent'] :
-            self.clone(hexagon)
-            self.flip(hexagon)
-            self.game_over()
-        if cor == self.COLORS['outer_adjacent'] :
-            self.jump(hexagon)
-            self.flip(hexagon)
-            self.game_over()
-        
+        if self.local_player_id == self.current_player_id:
+            cor = self.canvas.itemcget(hexagon, 'fill')
+            if cor == self.COLORS[f'player_{self.local_player_id}'] or self.COLORS[f'player_{self.local_player_id}_selected']:
+                self.select_hexagon(hexagon)
+            if cor == self.COLORS['inner_adjacent'] or cor == self.COLORS['outer_adjacent']:
+                if cor == self.COLORS['inner_adjacent'] :
+                    self.clone(hexagon)
+                elif cor == self.COLORS['outer_adjacent'] :
+                    self.jump(hexagon)
+                self.flip(hexagon)
+                self.check_game_over()
+                self.send_move()
+        else:
+            self.message_label.config(text="Aguarde a jogada do adversário")
+
+
 
     def get_adjacent_hexagons(self, hexagon_index):
         adjacent_hexagons = []
@@ -164,19 +170,23 @@ class Board:
         hexagon_index = self.hexagons.index(hexagon)
         hexagon_color = self.hexagon_colors[hexagon_index]
 
-        if hexagon_color == self.COLORS['player_1']:
+        if hexagon_color == self.COLORS[f'player_{self.local_player_id}']:
+            for k in range(len(self.hexagons)):
+                if self.hexagon_colors[k] == self.COLORS[f'player_{self.local_player_id}_selected']:
+                    self.canvas.itemconfig(self.hexagons[k], fill=self.COLORS[f'player_{self.local_player_id}'])
+                    self.hexagon_colors[k] = self.COLORS[f'player_{self.local_player_id}']
             inner_adjacent_hexagons = self.get_adjacent_hexagons(hexagon_index)
             for i in inner_adjacent_hexagons:
                 if self.hexagon_colors[i] != self.COLORS['out_of_map']:
     
-                    if self.hexagon_colors[i] != self.COLORS['player_1'] and self.hexagon_colors[i] != self.COLORS['player_2']:
+                    if self.hexagon_colors[i] != self.COLORS[f'player_{self.local_player_id}'] and self.hexagon_colors[i] != self.COLORS[f'player_{self.remote_player_id}']:
                         self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS['inner_adjacent'])
                         self.hexagon_colors[i] = self.COLORS['inner_adjacent']
 
                     outer_adjacent_hexagons = self.get_adjacent_hexagons(i)
                     valid_colors = [self.COLORS['out_of_map'],
                                     self.COLORS['player_1'],
-                                    self.COLORS['player_2'],
+                                    self.COLORS['player_0'],
                                     self.COLORS['inner_adjacent'],
                                     self.COLORS['outer_adjacent']]
                     for j in outer_adjacent_hexagons:
@@ -184,33 +194,33 @@ class Board:
                             self.canvas.itemconfig(self.hexagons[j], fill=self.COLORS['outer_adjacent'])
                             self.hexagon_colors[j] = self.COLORS['outer_adjacent']
 
-            self.canvas.itemconfig(self.hexagons[hexagon_index], fill=self.COLORS['player_1_selected'])
-            self.hexagon_colors[hexagon_index] = self.COLORS['player_1_selected']
+            self.canvas.itemconfig(self.hexagons[hexagon_index], fill=self.COLORS[f'player_{self.local_player_id}_selected'])
+            self.hexagon_colors[hexagon_index] = self.COLORS[f'player_{self.local_player_id}_selected']
 
             self.selected_hexagon = hexagon_index
 
-        elif hexagon_color == self.COLORS['player_1_selected']:
+        elif hexagon_color == self.COLORS[f'player_{self.local_player_id}_selected']:
             if self.selected_hexagon is not None:
-                self.canvas.itemconfig(self.hexagons[self.selected_hexagon], fill=self.COLORS['player_1'])
-                self.hexagon_colors[self.selected_hexagon] = self.COLORS['player_1']
+                self.canvas.itemconfig(self.hexagons[self.selected_hexagon], fill=self.COLORS[f'player_{self.local_player_id}'])
+                self.hexagon_colors[self.selected_hexagon] = self.COLORS[f'player_{self.local_player_id}']
 
 
     def clone(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
-        self.canvas.itemconfig(hexagon, fill=self.COLORS['player_1'])
-        self.hexagon_colors[hexagon_index] = self.COLORS['player_1']
+        self.canvas.itemconfig(hexagon, fill=self.COLORS[f'player_{self.local_player_id}'])
+        self.hexagon_colors[hexagon_index] = self.COLORS[f'player_{self.local_player_id}']
         for k in range(len(self.hexagons)):
-            if self.hexagon_colors[k] == self.COLORS['player_1_selected']:
-                self.canvas.itemconfig(self.hexagons[k], fill=self.COLORS['player_1'])
-                self.hexagon_colors[k] = self.COLORS['player_1']
+            if self.hexagon_colors[k] == self.COLORS[f'player_{self.local_player_id}_selected']:
+                self.canvas.itemconfig(self.hexagons[k], fill=self.COLORS[f'player_{self.local_player_id}'])
+                self.hexagon_colors[k] = self.COLORS[f'player_{self.local_player_id}']
 
 
     def jump(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
-        self.canvas.itemconfig(hexagon, fill=self.COLORS['player_1'])
-        self.hexagon_colors[hexagon_index] = self.COLORS['player_1']
+        self.canvas.itemconfig(hexagon, fill=self.COLORS[f'player_{self.local_player_id}'])
+        self.hexagon_colors[hexagon_index] = self.COLORS[f'player_{self.local_player_id}']
         for k in range(len(self.hexagons)):
-            if self.hexagon_colors[k] == self.COLORS['player_1_selected']:
+            if self.hexagon_colors[k] == self.COLORS[f'player_{self.local_player_id}_selected']:
                 self.canvas.itemconfig(self.hexagons[k], fill=self.COLORS['unselected'])
                 self.hexagon_colors[k] = self.COLORS['unselected']
 
@@ -218,17 +228,17 @@ class Board:
         hexagon_index = self.hexagons.index(hexagon)
         inner_adjacent_hexagons = self.get_adjacent_hexagons(hexagon_index)
         for i in inner_adjacent_hexagons:
-            if self.hexagon_colors[i] == self.COLORS['player_2']:          
-                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS['player_1'])
-                self.hexagon_colors[i] = self.COLORS['player_1']
+            if self.hexagon_colors[i] == self.COLORS[f'player_{self.remote_player_id}']:          
+                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS[f'player_{self.local_player_id}'])
+                self.hexagon_colors[i] = self.COLORS[f'player_{self.local_player_id}']
 
-    def game_over(self):
+    def check_game_over(self):
         cont_j1 = 0
         cont_j2 = 0
         for k in range(len(self.hexagons)):
             if self.hexagon_colors[k] == self.COLORS['player_1']:
                 cont_j1 +=1
-            if self.hexagon_colors[k] == self.COLORS['player_2']:
+            if self.hexagon_colors[k] == self.COLORS['player_0']:
                 cont_j2 +=1
         if cont_j1 == 0:
             message = f"Jogador Vermelho venceu com {cont_j2} pontos"
@@ -252,6 +262,8 @@ class Board:
 
     def send_disconnect(self):	# Pyng use case "send connect"
         self.server_proxy.send_disconnect()
+        self.message_label.config(text="desconectado")
+
 
     def send_match(self):	# Pyng use case "send match"
         self.server_proxy.send_match(2)
@@ -261,6 +273,7 @@ class Board:
         self.send_match()
 
     def receive_disconnect(self):	# Pyng use case "receive disconnect"
+        self.message_label.config(text="desconectado")
         pass
 		
     def receive_error(self, error):	# Pyng use case "receive error"
@@ -270,10 +283,38 @@ class Board:
         print('*************** PARTIDA INICIADA *******************')
         print('*************** ORDEM: ', match.position)
         print('*************** match_id: ', match.match_id)
+        self.local_player_id = match.position
+        self.match_id = match.match_id
+        if match.position==0:
+            self.message_label.config(text="Você começa")
+            self.remote_player_id=1
+        else:
+            self.message_label.config(text="O adversário começa")
+            self.remote_player_id=0
 
-    def receive_move(self, move):	# Pyng use case "receive move"
+
+    def receive_move(self, message):
+        for i in range(len(self.hexagon_colors)):
+            self.canvas.itemconfig(self.hexagons[i], fill=message.payload['board'][i])
+            self.hexagon_colors[i] = message.payload['board'][i]
+        self.message_label.config(text="É a sua vez de jogar")
+        self.toggle_player()
+        
+    
+    def receive_move_sent_success(self):
         pass
 
     def receive_match_requested_success(self):
         pass
 
+    def send_move(self):
+        self.message_label.config(text="enviando movimento")
+        self.server_proxy.send_move(self.match_id, {"board":self.hexagon_colors})
+        self.message_label.config(text="Vez do adversário")
+        self.toggle_player()
+
+    def toggle_player(self):
+        if self.current_player_id == 0:
+            self.current_player_id = 1
+        else:
+            self.current_player_id = 0
