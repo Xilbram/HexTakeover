@@ -34,6 +34,7 @@ class Board:
         self.local_player_id = None
         self.remote_player_id = None
         self.current_player_id = 0
+        self.game_running = False
         self.run()
         
 
@@ -132,7 +133,10 @@ class Board:
                 self.check_game_over()
                 self.send_move()
         else:
-            self.message_label.config(text="Aguarde a jogada do adversário")
+            if self.game_running:
+                self.message_label.config(text="Aguarde a jogada do adversário")
+            else:
+                self.message_label.config(text="Aguarde o início da partida")
 
 
 
@@ -283,6 +287,7 @@ class Board:
         print('*************** PARTIDA INICIADA *******************')
         print('*************** ORDEM: ', match.position)
         print('*************** match_id: ', match.match_id)
+        self.game_running = True
         self.local_player_id = match.position
         self.match_id = match.match_id
         if match.position==0:
