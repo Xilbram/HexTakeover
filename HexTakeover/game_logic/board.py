@@ -35,6 +35,7 @@ class Board:
         self.remote_player_id = None
         self.current_player_id = 0
         self.game_running = False
+        self.end_game =False
         self.run()
         
 
@@ -130,7 +131,6 @@ class Board:
                 elif cor == self.COLORS['outer_adjacent'] :
                     self.jump(hexagon)
                 self.flip(hexagon)
-                self.check_game_over()
                 self.send_move()
         else:
             if self.game_running:
@@ -237,19 +237,21 @@ class Board:
                 self.hexagon_colors[i] = self.COLORS[f'player_{self.local_player_id}']
 
     def check_game_over(self):
-        cont_j1 = 0
-        cont_j2 = 0
+        self.cont_j1 = 0
+        self.cont_j2 = 0
         for k in range(len(self.hexagons)):
             if self.hexagon_colors[k] == self.COLORS['player_1']:
-                cont_j1 +=1
+                self.cont_j1 +=1
             if self.hexagon_colors[k] == self.COLORS['player_0']:
-                cont_j2 +=1
-        if cont_j1 == 0:
-            message = f"Jogador Vermelho venceu com {cont_j2} pontos"
+                self.cont_j2 +=1
+        if self.cont_j1 == 0:
+            message = f"Jogador Vermelho venceu com {self.cont_j2} pontos"
             self.message_label.config(text=message)
-        elif cont_j2 == 0:
-            message = f"Jogador Azul venceu com {cont_j1} pontos"
+            self.end_game =True
+        elif self.cont_j2 == 0:
+            message = f"Jogador Azul venceu com {self.cont_j1} pontos"
             self.message_label.config(text=message)
+            self.end_game =True
 
 
             
@@ -302,8 +304,11 @@ class Board:
         for i in range(len(self.hexagon_colors)):
             self.canvas.itemconfig(self.hexagons[i], fill=message.payload['board'][i])
             self.hexagon_colors[i] = message.payload['board'][i]
-        self.message_label.config(text="É a sua vez de jogar")
-        self.toggle_player()
+        self.check_game_over()
+        if self.end_game == False:
+            self.message_label.config(text="É a sua vez de jogar")
+            self.toggle_player()
+        
         
     
     def receive_move_sent_success(self):
@@ -313,10 +318,14 @@ class Board:
         pass
 
     def send_move(self):
-        self.message_label.config(text="enviando movimento")
-        self.server_proxy.send_move(self.match_id, {"board":self.hexagon_colors})
-        self.message_label.config(text="Vez do adversário")
-        self.toggle_player()
+        self.check_game_over()
+        if self.end_game: 
+            self.server_proxy.send_move(self.match_id, {"board":self.hexagon_colors})
+        else:
+            self.message_label.config(text="enviando movimento")
+            self.server_proxy.send_move(self.match_id, {"board":self.hexagon_colors})
+            self.message_label.config(text="Vez do adversário")
+            self.toggle_player()
 
     def toggle_player(self):
         if self.current_player_id == 0:
