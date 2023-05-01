@@ -244,6 +244,15 @@ class Board:
                 self.cont_j1 +=1
             if self.hexagon_colors[k] == self.COLORS['player_0']:
                 self.cont_j2 +=1
+        if self.cont_j1+self.cont_j2==75:
+            if self.cont_j1<self.cont_j2:
+                message = f"Jogador Vermelho venceu com {self.cont_j2} pontos"
+                self.message_label.config(text=message)
+                self.end_game =True
+            else:
+                message = f"Jogador Azul venceu com {self.cont_j1} pontos"
+                self.message_label.config(text=message)
+                self.end_game =True
         if self.cont_j1 == 0:
             message = f"Jogador Vermelho venceu com {self.cont_j2} pontos"
             self.message_label.config(text=message)
