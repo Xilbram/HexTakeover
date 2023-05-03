@@ -1,13 +1,11 @@
 import math
 import tkinter as tk
 from typing import Dict
-
 from py_netgames_client.tkinter_client.PyNetgamesServerProxy import PyNetgamesServerProxy
 from py_netgames_client.tkinter_client.PyNetgamesServerListener import PyNetgamesServerListener
 from py_netgames_model.messaging.message import MatchStartedMessage, MoveMessage
 
 class Board:
-
     # constants
     HEX_SIDE_LENGTH = 50
     MAP_WIDTH = 20
@@ -42,33 +40,37 @@ class Board:
         
 
     def run(self):
-        
         root = tk.Tk()
         root.title("Hex Takeover")
-
         # criando o menu
         menu_bar = tk.Menu(root)
         connect_menu = tk.Menu(menu_bar, tearoff=0)
-        menu_bar.add_cascade(label="Conectar ao servidor", command=self.send_connect)
-        menu_bar.add_cascade(label="Desconectar", command=self.send_disconnect)
-        menu_bar.add_cascade(label="Iniciar jogo", command=self.send_match)
-
+        # variável de controle para mostrar ou ocultar os botões
+        self.show_buttons = tk.BooleanVar()
+        self.show_buttons.set(True)  # Definir como True para mostrar os botões inicialmente
+        # Adicionar os botões ao menu e definir o estado com base na variável de controle
+        menu_bar.add_cascade(label="Conectar ao servidor", command=self.send_connect, state='normal' if self.game_running else 'disabled')
+        menu_bar.add_cascade(label="Desconectar", command=self.send_disconnect, state='normal' if self.game_running else 'disabled')
         root.config(menu=menu_bar)
-
         self.frame_game = tk.Frame(root, width=1400, height=800)
         self.frame_game.pack()
         self.canvas = tk.Canvas(self.frame_game, width=1400, height=800)
         self.canvas.pack()
-        hexagon_height = (self.HEX_SIDE_LENGTH * math.sqrt(3)) / 2
+        self.hexagon_height = (self.HEX_SIDE_LENGTH * math.sqrt(3)) / 2
+        self.init_positions()
+        # Criando widget Label para exibir mensagens
+        self.message_label = tk.Label(root, text=self.message, font=("Arial", 30), bg='#303030', fg='white')
+        self.message_label.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
+        self.add_listener()	# Pyng use case "add listener"
+        self.send_connect()	# Pyng use case "send connect"
+        root.mainloop()
 
-
-
+    def init_positions(self):
         for i in range(self.MAP_WIDTH):
             for j in range(self.MAP_HEIGHT):
                 x = i * 1.5 * self.HEX_SIDE_LENGTH
-                y = j * (hexagon_height * 2) + ((i % 2) * hexagon_height)
+                y = j * (self.hexagon_height * 2) + ((i % 2) * self.hexagon_height)
                 outline_color = self.COLORS['outline']
-
                 player_positions = {
                     (3, 3): self.COLORS['player_0'],
                     (3, 4): self.COLORS['player_0'],
@@ -85,45 +87,30 @@ class Board:
                     (15, 3): self.COLORS['player_1'],
                     (15, 4): self.COLORS['player_1']
                 }
-
                 if (i, j) in player_positions:
                     fill_color = player_positions[(i, j)]
                 else:
                     fill_color = self.COLORS['unselected']
-
                 # defining map borders
                 if i < 2 or i > 16 or j < 2 or j > 6:
                     fill_color = self.COLORS['out_of_map']
-
                 # represent the vertices (start at the left vertex and continue counterclockwise)
                 vertices = [
                     x - self.HEX_SIDE_LENGTH, y,
-                    x - self.HEX_SIDE_LENGTH / 2, y + hexagon_height,
-                    x + self.HEX_SIDE_LENGTH / 2, y + hexagon_height,
+                    x - self.HEX_SIDE_LENGTH / 2, y + self.hexagon_height,
+                    x + self.HEX_SIDE_LENGTH / 2, y + self.hexagon_height,
                     x + self.HEX_SIDE_LENGTH, y,
-                    x + self.HEX_SIDE_LENGTH / 2, y - hexagon_height,
-                    x - self.HEX_SIDE_LENGTH / 2, y - hexagon_height
+                    x + self.HEX_SIDE_LENGTH / 2, y - self.hexagon_height,
+                    x - self.HEX_SIDE_LENGTH / 2, y - self.hexagon_height
                 ]
-
                 hexagon = self.canvas.create_polygon(vertices, fill=fill_color, outline=outline_color)
-
                 self.hexagons.append(hexagon)
                 self.hexagon_colors.append(fill_color)
-
+                self.init_hexagons = self.hexagons
+                self.init_hexagon_colors = self.hexagon_colors
                 self.canvas.tag_bind(hexagon, '<Button-1>', lambda e, place=hexagon: self.on_hexagon_clicked(place))
 
-        # Criando widget Label para exibir mensagens
-        self.message_label = tk.Label(root, text=self.message, font=("Arial", 30), bg='#303030', fg='white')
-        self.message_label.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
-
-
-        self.add_listener()	# Pyng use case "add listener"
-        self.send_connect()	# Pyng use case "send connect"
-        root.mainloop()
-
-
     def on_hexagon_clicked(self, hexagon):
-        
         if self.local_player_id == self.current_player_id:
             cor = self.canvas.itemcget(hexagon, 'fill')
             if cor == self.COLORS[f'player_{self.local_player_id}'] or self.COLORS[f'player_{self.local_player_id}_selected']:
@@ -145,25 +132,20 @@ class Board:
     def get_possible(self, hexagon_index):
         clone_possible = []
         jump_possible = []
-
         inner_adjacent_hexagons = self.get_adjacent_hexagons(hexagon_index)
         for i in inner_adjacent_hexagons:
             if self.hexagon_colors[i] != self.COLORS['out_of_map']:
                 if self.hexagon_colors[i] == self.COLORS['unselected']:
                     clone_possible.append(i)
-
                 outer_adjacent_hexagons = self.get_adjacent_hexagons(i)
                 for j in outer_adjacent_hexagons:
                     if self.hexagon_colors[j]  == self.COLORS['unselected']:
                         jump_possible.append(j)
-
         return [clone_possible, jump_possible]
 
     def get_adjacent_hexagons(self, hexagon_index):
         adjacent_hexagons = []
-
         if hexagon_index // self.MAP_HEIGHT % 2 == 0:
-
             if hexagon_index - 1 >= 0:
                 adjacent_hexagons.append(hexagon_index - 1)
                 adjacent_hexagons.append(hexagon_index - self.MAP_HEIGHT)
@@ -181,7 +163,6 @@ class Board:
                 adjacent_hexagons.append(hexagon_index + 1)
                 adjacent_hexagons.append(hexagon_index + self.MAP_HEIGHT)
                 adjacent_hexagons.append(hexagon_index + (self.MAP_HEIGHT + 1))
-
         return adjacent_hexagons
     
     def clean_map(self):
@@ -197,27 +178,20 @@ class Board:
                 self.hexagon_colors[i] = self.COLORS[f'player_{self.remote_player_id}']
 
     def select_hexagon(self, hexagon):
-                
         hexagon_index = self.hexagons.index(hexagon)
         hexagon_color = self.hexagon_colors[hexagon_index]
         if hexagon_color == self.COLORS[f'player_{self.local_player_id}']:
             self.clean_map()
             possibles = self.get_possible(hexagon_index)
-
-            
             for d in range (len(possibles[1])):
                 self.canvas.itemconfig(self.hexagons[possibles[1][d]], fill=self.COLORS['outer_adjacent'])
                 self.hexagon_colors[possibles[1][d]] = self.COLORS['outer_adjacent']
-
             for c in range (len(possibles[0])):
                 self.canvas.itemconfig(self.hexagons[possibles[0][c]], fill=self.COLORS['inner_adjacent'])
                 self.hexagon_colors[possibles[0][c]] = self.COLORS['inner_adjacent']
-
             self.canvas.itemconfig(self.hexagons[hexagon_index], fill=self.COLORS[f'player_{self.local_player_id}_selected'])
             self.hexagon_colors[hexagon_index] = self.COLORS[f'player_{self.local_player_id}_selected']
             self.selected_hexagon = hexagon_index
-
-
         elif hexagon_color == self.COLORS[f'player_{self.local_player_id}_selected']:
             self.selected_hexagon = None
             self.clean_map()
@@ -230,7 +204,6 @@ class Board:
             if self.hexagon_colors[k] == self.COLORS[f'player_{self.local_player_id}_selected']:
                 self.canvas.itemconfig(self.hexagons[k], fill=self.COLORS[f'player_{self.local_player_id}'])
                 self.hexagon_colors[k] = self.COLORS[f'player_{self.local_player_id}']
-
 
     def jump(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
@@ -281,9 +254,11 @@ class Board:
             self.message_label.config(text=message)
             self.end_game =True
 
-
-            
-
+    def toggle_player(self):
+        if self.current_player_id == 0:
+            self.current_player_id = 1
+        else:
+            self.current_player_id = 0
 
 #----------------------- Pynetgames ----------------------------------
 
@@ -337,8 +312,7 @@ class Board:
             self.message_label.config(text="É a sua vez de jogar")
             self.toggle_player()
         self.clean_map()
-        
-    
+
     def receive_move_sent_success(self):
         pass
 
@@ -356,8 +330,4 @@ class Board:
             self.message_label.config(text="Vez do adversário")
             self.toggle_player()
 
-    def toggle_player(self):
-        if self.current_player_id == 0:
-            self.current_player_id = 1
-        else:
-            self.current_player_id = 0
+
