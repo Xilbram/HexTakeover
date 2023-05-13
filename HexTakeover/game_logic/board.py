@@ -10,17 +10,7 @@ class Board:
     HEX_SIDE_LENGTH = 50
     MAP_WIDTH = 20
     MAP_HEIGHT = 10
-    COLORS = {
-        'player_1': '#4260f5',
-        'player_1_selected': '#4290f5',
-        'player_0': '#f55142',
-        'player_0_selected': '#f54290',
-        'inner_adjacent': '#55be4e',
-        'outer_adjacent': '#cb7409',
-        'outline': '#303030',
-        'unselected': '#ffffff',
-        'out_of_map': '#303030'
-    }
+    
 
     def __init__(self):
         self.hexagons = []
@@ -31,15 +21,25 @@ class Board:
         self.message = "Iniciando o Jogo"
         self.local_player_id = None
         self.remote_player_id = None
-        self.local_player_hex = []
-        self.remote_player_hex = []
         self.current_player_id = 0
         self.game_running = False
-        self.end_game =False
-        self.run()
+        self.end_game = False
+        self.game_state = 1
+        self.COLORS = {
+        'player_1': '#4260f5',
+        'player_1_selected': '#4290f5',
+        'player_0': '#f55142',
+        'player_0_selected': '#f54290',
+        'inner_adjacent': '#55be4e',
+        'outer_adjacent': '#cb7409',
+        'outline': '#303030',
+        'unselected': '#ffffff',
+        'out_of_map': '#303030'
+        }
+        self.create_interface()
         
 
-    def run(self):
+    def create_interface(self):
         root = tk.Tk()
         root.title("Hex Takeover")
         # criando o menu
@@ -49,18 +49,19 @@ class Board:
         self.show_buttons = tk.BooleanVar()
         self.show_buttons.set(True)  # Definir como True para mostrar os botões inicialmente
         # Adicionar os botões ao menu e definir o estado com base na variável de controle
-        menu_bar.add_cascade(label="Conectar ao servidor", command=self.send_connect, state='normal' if self.game_running else 'disabled')
-        menu_bar.add_cascade(label="Desconectar", command=self.send_disconnect, state='normal' if self.game_running else 'disabled')
+        menu_bar.add_cascade(label="Conectar ao servidor", command=self.send_connect, state='normal' if self.game_state==1 else 'disabled')
+        menu_bar.add_cascade(label="Desconectar", command=self.send_disconnect, state='normal' if self.game_state==1 else 'disabled')
         root.config(menu=menu_bar)
         self.frame_game = tk.Frame(root, width=1400, height=800)
         self.frame_game.pack()
         self.canvas = tk.Canvas(self.frame_game, width=1400, height=800)
         self.canvas.pack()
         self.hexagon_height = (self.HEX_SIDE_LENGTH * math.sqrt(3)) / 2
-        self.init_positions()
+
         # Criando widget Label para exibir mensagens
         self.message_label = tk.Label(root, text=self.message, font=("Arial", 30), bg='#303030', fg='white')
         self.message_label.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
+        self.init_positions()
         self.add_listener()	# Pyng use case "add listener"
         self.send_connect()	# Pyng use case "send connect"
         root.mainloop()
@@ -253,12 +254,18 @@ class Board:
             message = f"Jogador Azul venceu com {self.cont_j0} pontos"
             self.message_label.config(text=message)
             self.end_game =True
+        if self.end_game==True:
+            self.game_state=4
 
     def toggle_player(self):
         if self.current_player_id == 0:
             self.current_player_id = 1
         else:
             self.current_player_id = 0
+        if self.current_player_id == self.local_player_id:
+            self.game_state = 2
+        else:
+            self.game_state = 3
 
 #----------------------- Pynetgames ----------------------------------
 
@@ -271,7 +278,6 @@ class Board:
 
     def send_disconnect(self):	# Pyng use case "send connect"
         self.server_proxy.send_disconnect()
-        self.message_label.config(text="desconectado")
 
 
     def send_match(self):	# Pyng use case "send match"
@@ -295,12 +301,14 @@ class Board:
         self.game_running = True
         self.local_player_id = match.position
         self.match_id = match.match_id
-        if match.position==0:
+        if self.local_player_id==0:
             self.message_label.config(text="Você começa")
             self.remote_player_id=1
+            self.game_state = 2
         else:
             self.message_label.config(text="O adversário começa")
             self.remote_player_id=0
+            self.game_state = 3
 
 
     def receive_move(self, message):
@@ -327,7 +335,9 @@ class Board:
         else:
             self.message_label.config(text="enviando movimento")
             self.server_proxy.send_move(self.match_id, {"board":self.hexagon_colors})
-            self.message_label.config(text="Vez do adversário")
             self.toggle_player()
+            if self.game_state==3:
+                self.message_label.config(text="Vez do adversário")
+            
 
 
