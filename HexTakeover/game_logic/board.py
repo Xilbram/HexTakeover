@@ -44,13 +44,12 @@ class Board:
         root.title("Hex Takeover")
         # criando o menu
         menu_bar = tk.Menu(root)
-        connect_menu = tk.Menu(menu_bar, tearoff=0)
         # variável de controle para mostrar ou ocultar os botões
         self.show_buttons = tk.BooleanVar()
         self.show_buttons.set(True)  # Definir como True para mostrar os botões inicialmente
         # Adicionar os botões ao menu e definir o estado com base na variável de controle
-        menu_bar.add_cascade(label="Conectar ao servidor", command=self.send_connect, state='normal' if self.game_state==1 else 'disabled')
-        menu_bar.add_cascade(label="Desconectar", command=self.send_disconnect, state='normal' if self.game_state==1 else 'disabled')
+        menu_bar.add_cascade(label="Conectar ao servidor", command=self.send_connect, state='normal' if not self.game_running else 'disabled')
+        menu_bar.add_cascade(label="Desconectar", command=self.send_disconnect, state='normal' if  not self.game_running else 'disabled')
         root.config(menu=menu_bar)
         self.frame_game = tk.Frame(root, width=1400, height=800)
         self.frame_game.pack()
@@ -65,6 +64,7 @@ class Board:
         self.add_listener()	# Pyng use case "add listener"
         self.send_connect()	# Pyng use case "send connect"
         root.mainloop()
+        
 
     def init_positions(self):
         for i in range(self.MAP_WIDTH):
@@ -112,7 +112,9 @@ class Board:
                 self.canvas.tag_bind(hexagon, '<Button-1>', lambda e, place=hexagon: self.on_hexagon_clicked(place))
 
     def on_hexagon_clicked(self, hexagon):
-        if self.local_player_id == self.current_player_id:
+        if self.game_state==1:
+            self.message_label.config(text="Aguarde o início da partida")
+        elif self.game_state==2:
             cor = self.canvas.itemcget(hexagon, 'fill')
             if cor == self.COLORS[f'player_{self.local_player_id}'] or self.COLORS[f'player_{self.local_player_id}_selected']:
                 self.select_hexagon(hexagon)
@@ -123,12 +125,9 @@ class Board:
                     self.jump(hexagon)
                 self.flip(hexagon)
                 self.send_move()
-        else:
-            if self.game_running:
-                self.message_label.config(text="Aguarde a jogada do adversário")
-            else:
-                self.message_label.config(text="Aguarde o início da partida")
-                
+        elif self.game_state==3:
+            self.message_label.config(text="Aguarde a jogada do adversário")
+
 
     def get_possible(self, hexagon_index):
         clone_possible = []
@@ -169,15 +168,18 @@ class Board:
     def clean_map(self):
         for i in range(len(self.hexagon_colors)):
             if self.hexagon_colors[i] == self.COLORS['inner_adjacent'] or self.hexagon_colors[i] == self.COLORS['outer_adjacent']:
-                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS['unselected'])
                 self.hexagon_colors[i] = self.COLORS['unselected']
+                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS['unselected'])
+                
             if self.hexagon_colors[i] == self.COLORS[f'player_{self.local_player_id}_selected']:
-                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS[f'player_{self.local_player_id}'])
                 self.hexagon_colors[i] = self.COLORS[f'player_{self.local_player_id}']
+                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS[f'player_{self.local_player_id}'])
+                
             if self.hexagon_colors[i] == self.COLORS[f'player_{self.remote_player_id}_selected']:
-                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS[f'player_{self.remote_player_id}'])
                 self.hexagon_colors[i] = self.COLORS[f'player_{self.remote_player_id}']
 
+                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS[f'player_{self.remote_player_id}'])
+                
     def select_hexagon(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
         hexagon_color = self.hexagon_colors[hexagon_index]
@@ -185,13 +187,17 @@ class Board:
             self.clean_map()
             possibles = self.get_possible(hexagon_index)
             for d in range (len(possibles[1])):
-                self.canvas.itemconfig(self.hexagons[possibles[1][d]], fill=self.COLORS['outer_adjacent'])
+                
                 self.hexagon_colors[possibles[1][d]] = self.COLORS['outer_adjacent']
+                self.canvas.itemconfig(self.hexagons[possibles[1][d]], fill=self.COLORS['outer_adjacent'])
+                
             for c in range (len(possibles[0])):
-                self.canvas.itemconfig(self.hexagons[possibles[0][c]], fill=self.COLORS['inner_adjacent'])
                 self.hexagon_colors[possibles[0][c]] = self.COLORS['inner_adjacent']
-            self.canvas.itemconfig(self.hexagons[hexagon_index], fill=self.COLORS[f'player_{self.local_player_id}_selected'])
+                self.canvas.itemconfig(self.hexagons[possibles[0][c]], fill=self.COLORS['inner_adjacent'])
+                
             self.hexagon_colors[hexagon_index] = self.COLORS[f'player_{self.local_player_id}_selected']
+            self.canvas.itemconfig(self.hexagons[hexagon_index], fill=self.COLORS[f'player_{self.local_player_id}_selected'])
+            
             self.selected_hexagon = hexagon_index
         elif hexagon_color == self.COLORS[f'player_{self.local_player_id}_selected']:
             self.selected_hexagon = None
@@ -199,27 +205,24 @@ class Board:
 
     def clone(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
-        self.canvas.itemconfig(hexagon, fill=self.COLORS[f'player_{self.local_player_id}'])
         self.hexagon_colors[hexagon_index] = self.COLORS[f'player_{self.local_player_id}']
-        for k in range(len(self.hexagons)):
-            if self.hexagon_colors[k] == self.COLORS[f'player_{self.local_player_id}_selected']:
-                self.canvas.itemconfig(self.hexagons[k], fill=self.COLORS[f'player_{self.local_player_id}'])
-                self.hexagon_colors[k] = self.COLORS[f'player_{self.local_player_id}']
+        self.canvas.itemconfig(hexagon, fill=self.COLORS[f'player_{self.local_player_id}'])
 
     def jump(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
-        self.canvas.itemconfig(hexagon, fill=self.COLORS[f'player_{self.local_player_id}'])
         self.hexagon_colors[hexagon_index] = self.COLORS[f'player_{self.local_player_id}']
-        self.canvas.itemconfig(self.hexagons[self.selected_hexagon], fill=self.COLORS['unselected'])
+        self.canvas.itemconfig(hexagon, fill=self.COLORS[f'player_{self.local_player_id}'])
         self.hexagon_colors[self.selected_hexagon] = self.COLORS['unselected']
+        self.canvas.itemconfig(self.hexagons[self.selected_hexagon], fill=self.COLORS['unselected'])
 
     def flip(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
         inner_adjacent_hexagons = self.get_adjacent_hexagons(hexagon_index)
         for i in inner_adjacent_hexagons:
             if self.hexagon_colors[i] == self.COLORS[f'player_{self.remote_player_id}']:          
-                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS[f'player_{self.local_player_id}'])
                 self.hexagon_colors[i] = self.COLORS[f'player_{self.local_player_id}']
+                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS[f'player_{self.local_player_id}'])
+                
 
     def check_game_over(self):
         self.clean_map()
@@ -274,10 +277,12 @@ class Board:
         self.server_proxy.add_listener(self)
 
     def send_connect(self):	# Pyng use case "send connect"
-        self.server_proxy.send_connect("wss://py-netgames-server.fly.dev")
+        if self.game_state == 1:
+            self.server_proxy.send_connect("wss://py-netgames-server.fly.dev")
 
     def send_disconnect(self):	# Pyng use case "send connect"
-        self.server_proxy.send_disconnect()
+        if self.game_state == 1:
+            self.server_proxy.send_disconnect()
 
 
     def send_match(self):	# Pyng use case "send match"
@@ -313,8 +318,9 @@ class Board:
 
     def receive_move(self, message):
         for i in range(len(self.hexagon_colors)):
-            self.canvas.itemconfig(self.hexagons[i], fill=message.payload['board'][i])
             self.hexagon_colors[i] = message.payload['board'][i]
+            self.canvas.itemconfig(self.hexagons[i], fill=message.payload['board'][i])
+            
         self.check_game_over()
         if self.end_game == False:
             self.message_label.config(text="É a sua vez de jogar")
