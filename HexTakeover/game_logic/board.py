@@ -294,9 +294,12 @@ class Board:
 
     def receive_disconnect(self):	# Pyng use case "receive disconnect"
         self.message_label.config(text="desconectado")
+        self.send_connect()
         pass
 		
     def receive_error(self, error):	# Pyng use case "receive error"
+        self.message_label.config(text="Erro no sistema")
+        self.send_disconnect()
         pass
 
     def receive_match(self, match):	# Pyng use case "receive match"
@@ -323,9 +326,8 @@ class Board:
             
         self.check_game_over()
         if self.end_game == False:
-            self.message_label.config(text="É a sua vez de jogar")
             self.toggle_player()
-        self.clean_map()
+            self.message_label.config(text="É a sua vez de jogar")
 
     def receive_move_sent_success(self):
         pass
