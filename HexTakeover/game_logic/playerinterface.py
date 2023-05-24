@@ -71,30 +71,27 @@ class PlayerInterface(PyNetgamesServerListener):
             else:
                 return self.local_player.getColorSelecao()
 
-
     def initialize(self):
+        # Criando widget Label para exibir mensagens
+        self.message_label = tk.Label(self.root, text=self.message, font=("Arial", 30), bg='#303030', fg='white')
+        self.message_label.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
+        self.menu_bar(True)
+        self.init_positions()
+        self.add_listener()  # Pyng use case "add listener"
+        self.send_connect()  # Pyng use case "send connect"
+        self.root.mainloop()
+
+    def menu_bar(self, state):
         menu_bar = tk.Menu(self.root)
-        # variável de controle para mostrar ou ocultar os botões
-        self.show_buttons.set(True)  # Definir como True para mostrar os botões inicialmente
         # Adicionar os botões ao menu e definir o estado com base na variável de controle
-        menu_bar.add_cascade(label="Conectar ao servidor", command=self.send_connect,
-                             state='normal' if not self.game_running else 'disabled')
-        menu_bar.add_cascade(label="Desconectar", command=self.send_disconnect,
-                             state='normal' if not self.game_running else 'disabled')
+        menu_bar.add_cascade(label="Conectar ao servidor", command=self.send_connect, state='normal' if state else 'disabled')
+        menu_bar.add_cascade(label="Desconectar", command=self.send_disconnect, state='normal' if state else 'disabled')
         self.root.config(menu=menu_bar)
         self.frame_game.pack()
 
         self.canvas = tk.Canvas(self.frame_game, width=1400, height=800)
         self.canvas.pack()
 
-        # Criando widget Label para exibir mensagens
-        self.message_label = tk.Label(self.root, text=self.message, font=("Arial", 30), bg='#303030', fg='white')
-        self.message_label.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
-        self.init_positions()
-        self.add_listener()  # Pyng use case "add listener"
-        self.send_connect()  # Pyng use case "send connect"
-        self.root.mainloop()
-        
     def init_positions(self):
         for i in range(self.MAP_WIDTH):
             for j in range(self.MAP_HEIGHT):
@@ -262,12 +259,10 @@ class PlayerInterface(PyNetgamesServerListener):
         self.server_proxy.add_listener(self)
 
     def send_connect(self):  # Pyng use case "send connect"
-        if self.board.getGameState() == 1:
-            self.server_proxy.send_connect("wss://py-netgames-server.fly.dev")
+        self.server_proxy.send_connect("wss://py-netgames-server.fly.dev")
 
     def send_disconnect(self):  # Pyng use case "send connect"
-        if self.board.getGameState() == 1:
-            self.server_proxy.send_disconnect()
+        self.server_proxy.send_disconnect()
 
     def send_match(self):  # Pyng use case "send match"
         self.server_proxy.send_match(2)
@@ -278,18 +273,16 @@ class PlayerInterface(PyNetgamesServerListener):
 
     def receive_disconnect(self):  # Pyng use case "receive disconnect"
         self.message_label.config(text="desconectado")
-        pass
 
     def receive_error(self, error):  # Pyng use case "receive error"
         self.message_label.config(text="Erro no sistema")
-        self.send_disconnect()
-        pass
 
     def receive_match(self, match):  # Pyng use case "receive match"
         print('*************** PARTIDA INICIADA *******************')
         print('*************** ORDEM: ', match.position)
         print('*************** match_id: ', match.match_id)
         self.game_running = True
+        self.menu_bar(False)
         self.local_player_id = match.position
         self.match_id = match.match_id
         if self.local_player_id == 0:
