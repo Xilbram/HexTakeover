@@ -21,10 +21,10 @@ class Tabuleiro:
             'out_of_map': '#303030'
         }
 
-    def getGameState(self):
+    def get_game_state(self):
         return self.game_state
 
-    def setGameState(self, state):
+    def set_game_state(self, state):
         self.game_state = state
 
     def get_possible(self, hexagon_index):
@@ -61,11 +61,9 @@ class Tabuleiro:
                 adjacent_hexagons.append(hexagon_index + 1)
                 adjacent_hexagons.append(hexagon_index + self.MAP_HEIGHT)
                 adjacent_hexagons.append(hexagon_index + (self.MAP_HEIGHT + 1))
-
-        print(adjacent_hexagons)
         return adjacent_hexagons
 
-    def checkGameOver(self, corRemoto, corLocal):
+    def check_game_over(self, corRemoto, corLocal):
         self.cont_j0 = 0
         self.cont_j1 = 0
         self.cont_jog_j0 = 0
