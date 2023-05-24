@@ -26,6 +26,7 @@ class PlayerInterface(PyNetgamesServerListener):
         self.genHexagon = Hexagono()
         self.hexagons = []
         self.hexagon_colors = []
+        self.debug = True
         self.selected_hexagon = None
         self.canvas = None
         self.local_player_id = None
@@ -158,10 +159,12 @@ class PlayerInterface(PyNetgamesServerListener):
                     self.jump(hexagon)
                 self.flip(hexagon)
                 self.send_move()
-                print(self.hexagon_colors)
-                self.clean_map()
-                print("--------------------")
-                print(self.hexagon_colors)
+
+                if self.debug:
+                    print(self.hexagon_colors)
+                    self.clean_map()
+                    print("--------------------")
+                    print(self.hexagon_colors)
         elif self.game_state == 3:
             self.message_label.config(text="Aguarde a jogada do adversário")
 
@@ -212,7 +215,6 @@ class PlayerInterface(PyNetgamesServerListener):
         hexagon_index = self.hexagons.index(hexagon)
         self.hexagon_colors[hexagon_index] = self.getCorJogadorVez()
         self.board.hexagon_colors[hexagon_index] = self.getCorJogadorVez()
-
         self.canvas.itemconfig(hexagon, fill=self.getCorJogadorVez())
 
     def jump(self, hexagon):
@@ -236,12 +238,10 @@ class PlayerInterface(PyNetgamesServerListener):
                 self.canvas.itemconfig(self.hexagons[i], fill=self.getCorJogadorVez())
 
 
-    def check_game_over(self):
+    def AvaliarEncerramento(self):
         self.clean_map()
-
         #resultado é uma tupla str int
         resultado = self.board.checkGameOver(self.remote_player.getColor(), self.local_player.getColor())
-
         if resultado != None:
             message = "Jogador {} venceu com {} pontos".format(resultado[0], resultado[1])
             self.message_label.config(text=message)
@@ -313,7 +313,7 @@ class PlayerInterface(PyNetgamesServerListener):
 
             self.canvas.itemconfig(self.hexagons[i], fill=message.payload['board'][i])
 
-        self.check_game_over()
+        self.AvaliarEncerramento()
         if self.end_game == False:
             self.toggle_player()
             self.message_label.config(text="É a sua vez de jogar")
@@ -326,7 +326,7 @@ class PlayerInterface(PyNetgamesServerListener):
 
     def send_move(self):
         self.clean_map()
-        self.check_game_over()
+        self.AvaliarEncerramento()
         if self.end_game:
             self.server_proxy.send_move(self.match_id, {"board": self.hexagon_colors})
         else:
