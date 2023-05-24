@@ -60,11 +60,18 @@ class PlayerInterface(PyNetgamesServerListener):
 
 
     
-    def getCorSelectedJogadorVez(self):
-        if self.local_player_id == 0:
-            return self.local_player.getColorSelecao()
+    def getCorSelectedJogadorVez(self, swap=False):
+        if swap == False:
+            if self.local_player_id == 0:
+                return self.local_player.getColorSelecao()
+            else:
+                return self.remote_player.getColorSelecao()
         else:
-            return self.remote_player.getColorSelecao()
+            if self.local_player_id == 0:
+                return self.remote_player.getColorSelecao()
+            else:
+                return self.local_player.getColorSelecao()
+
 
     def initialize(self):
         menu_bar = tk.Menu(self.root)
@@ -151,6 +158,10 @@ class PlayerInterface(PyNetgamesServerListener):
                     self.jump(hexagon)
                 self.flip(hexagon)
                 self.send_move()
+                print(self.hexagon_colors)
+                self.clean_map()
+                print("--------------------")
+                print(self.hexagon_colors)
         elif self.game_state == 3:
             self.message_label.config(text="Aguarde a jogada do adversário")
 
@@ -165,12 +176,10 @@ class PlayerInterface(PyNetgamesServerListener):
                 self.board.hexagon_colors[i] = self.getCorJogadorVez()
                 self.canvas.itemconfig(self.hexagons[i], fill=self.getCorJogadorVez())
 
-            if self.hexagon_colors[i] == self.getCorSelectedJogadorVez():
-                self.hexagon_colors[i] = self.getCorJogadorVez()
-                self.board.hexagon_colors[i] = self.getCorJogadorVez()
-
-
-                self.canvas.itemconfig(self.hexagons[i], fill=self.getCorJogadorVez())
+            if self.hexagon_colors[i] == self.getCorSelectedJogadorVez(True):
+                self.hexagon_colors[i] = self.getCorJogadorVez(True)
+                self.board.hexagon_colors[i] = self.getCorJogadorVez(True)
+                self.canvas.itemconfig(self.hexagons[i], fill=self.getCorJogadorVez(True))
 
     def select_hexagon(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
@@ -178,7 +187,6 @@ class PlayerInterface(PyNetgamesServerListener):
         if hexagon_color == self.getCorJogadorVez():
             self.clean_map()
             possibles = self.board.get_possible(hexagon_index)
-            print(possibles)
             for d in range(len(possibles[1])):
                 self.hexagon_colors[possibles[1][d]] = self.COLORS['outer_adjacent']
                 self.board.hexagon_colors[possibles[1][d]] = self.COLORS['outer_adjacent']
@@ -230,39 +238,16 @@ class PlayerInterface(PyNetgamesServerListener):
 
     def check_game_over(self):
         self.clean_map()
-        self.cont_j0 = 0
-        self.cont_j1 = 0
-        self.cont_jog_j0 = 0
-        self.cont_jog_j1 = 0
-        for k in range(20, 170):
-            possibles = self.board.get_possible(self.hexagons[k])
-            if self.hexagon_colors[k] == self.remote_player.getColor():
-                self.cont_j0 += 1
-                if self.cont_jog_j0 == 0:
-                    self.cont_jog_j0 = len(possibles[0]) + len(possibles[1])
-            if self.hexagon_colors[k] == self.local_player.getColor():
-                self.cont_j1 += 1
-                if self.cont_jog_j1 == 0:
-                    self.cont_jog_j1 = len(possibles[0]) + len(possibles[1])
-        if self.cont_j0 + self.cont_j1 == 75:
-            if self.cont_j0 < self.cont_j1:
-                message = f"Jogador Vermelho venceu com {self.cont_j1} pontos"
-                self.message_label.config(text=message)
-                self.end_game = True
-            else:
-                message = f"Jogador Azul venceu com {self.cont_j0} pontos"
-                self.message_label.config(text=message)
-                self.end_game = True
-        if self.cont_j0 == 0 or self.cont_jog_j0 == 0:
-            message = f"Jogador Vermelho venceu com {self.cont_j1} pontos"
+
+        #resultado é uma tupla str int
+        resultado = self.board.checkGameOver(self.remote_player.getColor(), self.local_player.getColor())
+
+        if resultado != None:
+            message = "Jogador {} venceu com {} pontos".format(resultado[0], resultado[1])
             self.message_label.config(text=message)
             self.end_game = True
-        elif self.cont_j1 == 0 or self.cont_jog_j1 == 0:
-            message = f"Jogador Azul venceu com {self.cont_j0} pontos"
-            self.message_label.config(text=message)
-            self.end_game = True
-        if self.end_game == True:
             self.game_state = 4
+
 
     def toggle_player(self):
         if self.current_player_id == 0:

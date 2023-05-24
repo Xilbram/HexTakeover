@@ -67,5 +67,35 @@ class Tabuleiro:
         print(adjacent_hexagons)
         return adjacent_hexagons
 
+    def checkGameOver(self, corRemoto, corLocal) -> (str, int):
+        self.cont_j0 = 0
+        self.cont_j1 = 0
+        self.cont_jog_j0 = 0
+        self.cont_jog_j1 = 0
+        for k in range(20, 170):
+            possibles = self.get_possible(self.hexagons[k])
+            if self.hexagon_colors[k] == corRemoto:
+                self.cont_j0 += 1
+                if self.cont_jog_j0 == 0:
+                    self.cont_jog_j0 = len(possibles[0]) + len(possibles[1])
+            if self.hexagon_colors[k] == corLocal:
+                self.cont_j1 += 1
+                if self.cont_jog_j1 == 0:
+                    self.cont_jog_j1 = len(possibles[0]) + len(possibles[1])
+        if self.cont_j0 + self.cont_j1 == 75:
+            if self.cont_j0 < self.cont_j1:
+                return ("Vermelho", self.cont_j1)
+
+            else:
+                return ("Azul", self.cont_j0)
+
+        if self.cont_j0 == 0 or self.cont_jog_j0 == 0:
+            return ("Vermelho", self.cont_j1)
+
+        elif self.cont_j1 == 0 or self.cont_jog_j1 == 0:
+            return ("Azul", self.cont_j0)
+
+
+        return None
 
 
