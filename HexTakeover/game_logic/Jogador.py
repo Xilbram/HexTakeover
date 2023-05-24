@@ -1,28 +1,29 @@
 class Jogador:
-    def __init__(self, cor,id,cor_selecao ):
+    def __init__(self, cor,id,cor_selecao):
         self.__cor: str = cor
         self.__cor_selecao: str = cor_selecao
         self.__turno: bool = False
         self.__id: str = id
-        self.__totalHexagonos = 0
+        self.__total_hexagonos = 0
         self.__vencedor = False
 
     def reset(self):
-        self.__totalHexagonos = 0
+        self.__total_hexagonos = 0
         self.__hexagonos = []
         self.__vencedor = False
 
-    def getTotalHexagonos(self):
-        return self.__totalHexagonos
-    def increaseTotalHexagonos(self, num):
-        self.__totalHexagonos += num
+    def get_total_hexagonos(self):
+        return self.__total_hexagonos
+    
+    def increase_total_hexagonos(self, num):
+        self.__total_hexagonos += num
 
-    def getColor(self):
+    def get_color(self):
         return self.__cor
 
-    def getId(self):
+    def get_id(self):
         return self.__id
-    def getColorSelecao(self):
+    def get_color_selecao(self):
         return self.__cor_selecao
 
 
