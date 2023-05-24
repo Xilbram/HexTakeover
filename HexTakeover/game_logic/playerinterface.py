@@ -138,10 +138,10 @@ class PlayerInterface(PyNetgamesServerListener):
                 self.canvas.tag_bind(hexagon, '<Button-1>', lambda e, place=hexagon: self.on_hexagon_clicked(place))
 
     def on_hexagon_clicked(self, hexagon):
-        if self.board.getGameState() == 1:
+        state = self.board.getGameState()
+        if state == 1:
             self.message_label.config(text="Aguarde o início da partida")
-
-        elif self.board.getGameState() == 2:
+        elif state == 2:
             cor = self.canvas.itemcget(hexagon, 'fill')
             if cor == self.getCorJogadorVez() or self.getCorSelectedJogadorVez():
                 self.select_hexagon(hexagon)
@@ -158,8 +158,10 @@ class PlayerInterface(PyNetgamesServerListener):
                     self.clean_map()
                     print("--------------------")
                     print(self.hexagon_colors)
-        elif self.board.getGameState() == 3:
+        elif state == 3:
             self.message_label.config(text="Aguarde a jogada do adversário")
+        elif state ==4:
+            self.message_label.config(text="A partida acabou, feche o jogo")
 
     def clean_map(self):
         for i in range(len(self.hexagon_colors)):
@@ -283,16 +285,16 @@ class PlayerInterface(PyNetgamesServerListener):
         print('*************** match_id: ', match.match_id)
         self.game_running = True
         self.menu_bar(False)
-        self.local_player_id = match.position
         self.match_id = match.match_id
+        self.local_player_id = match.position
         if self.local_player_id == 0:
-            self.message_label.config(text="Você começa")
             self.remote_player_id = 1
             self.board.setGameState(2)
+            self.message_label.config(text="Você começa")
         else:
-            self.message_label.config(text="O adversário começa")
             self.remote_player_id = 0
             self.board.setGameState(3)
+            self.message_label.config(text="O adversário começa")
 
     def receive_move(self, message):
         for i in range(len(self.hexagon_colors)):
