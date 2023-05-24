@@ -1,5 +1,5 @@
 import logging
-from HexTakeover.game_logic.playerinterface import PlayerInterface
+from game_logic.playerinterface import PlayerInterface
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
