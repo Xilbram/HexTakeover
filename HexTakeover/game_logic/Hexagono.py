@@ -1,13 +1,14 @@
+import math
 
-class Hexagono:
-    def init(self, pos: tuple):
-        self.__pos: tuple = pos
-        self.__side_lenght = 50
+class Hexagono():
+    def __init__(self):
+        self.__side_len = 50
+        self.__hexagon_height = (self.__side_len * math.sqrt(3)) / 2
 
 
-    def getPos(self) -> tuple:
-        return self.__pos
+    def getSideLenght(self) -> int:
+        return self.__side_len
 
-    def getSideLen(self):
-        return self.__side_lenght
+    def getHexHeight(self):
+        return self.__hexagon_height
 

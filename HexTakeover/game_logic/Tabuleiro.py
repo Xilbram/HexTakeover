@@ -4,8 +4,6 @@ from typing import Dict
 
 class Tabuleiro:
     # constants
-    HEX_SIDE_LENGTH = 50
-    MAP_WIDTH = 20
     MAP_HEIGHT = 10
 
     def __init__(self):
@@ -65,6 +63,8 @@ class Tabuleiro:
                 adjacent_hexagons.append(hexagon_index + 1)
                 adjacent_hexagons.append(hexagon_index + self.MAP_HEIGHT)
                 adjacent_hexagons.append(hexagon_index + (self.MAP_HEIGHT + 1))
+
+        print(adjacent_hexagons)
         return adjacent_hexagons
 
 

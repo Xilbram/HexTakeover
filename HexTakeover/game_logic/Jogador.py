@@ -32,4 +32,4 @@ class Jogador:
         self.__hexagonos = newArr
 
     def getHexLen(self):
-        self.__hexagonos[0].getSideLen()
+        self.__hexagonos[0].getSideLenght()
