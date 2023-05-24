@@ -6,9 +6,9 @@ class Hexagono():
         self.__hexagon_height = (self.__side_len * math.sqrt(3)) / 2
 
 
-    def getSideLenght(self) -> int:
+    def get_side_length(self) -> int:
         return self.__side_len
 
-    def getHexHeight(self):
+    def get_hex_height(self):
         return self.__hexagon_height
 
