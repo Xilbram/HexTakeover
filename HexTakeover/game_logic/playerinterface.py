@@ -34,7 +34,6 @@ class PlayerInterface(PyNetgamesServerListener):
         self.current_player_id = 0
         self.game_running = False
         self.end_game = False
-        self.game_state = 1
         self.local_player = Jogador('#f55142', self.local_player_id, '#f54290')
         self.remote_player = Jogador('#4260f5', self.remote_player_id, '#4290f5')
         self.COLORS = {
@@ -143,10 +142,10 @@ class PlayerInterface(PyNetgamesServerListener):
                 self.canvas.tag_bind(hexagon, '<Button-1>', lambda e, place=hexagon: self.on_hexagon_clicked(place))
 
     def on_hexagon_clicked(self, hexagon):
-        if self.game_state == 1:
+        if self.board.getGameState() == 1:
             self.message_label.config(text="Aguarde o início da partida")
 
-        elif self.game_state == 2:
+        elif self.board.getGameState() == 2:
             cor = self.canvas.itemcget(hexagon, 'fill')
             if cor == self.getCorJogadorVez() or self.getCorSelectedJogadorVez():
                 self.message_label.config(text="{}".format(self.local_player_id))
@@ -165,7 +164,7 @@ class PlayerInterface(PyNetgamesServerListener):
                     self.clean_map()
                     print("--------------------")
                     print(self.hexagon_colors)
-        elif self.game_state == 3:
+        elif self.board.getGameState() == 3:
             self.message_label.config(text="Aguarde a jogada do adversário")
 
     def clean_map(self):
@@ -246,7 +245,7 @@ class PlayerInterface(PyNetgamesServerListener):
             message = "Jogador {} venceu com {} pontos".format(resultado[0], resultado[1])
             self.message_label.config(text=message)
             self.end_game = True
-            self.game_state = 4
+            self.board.setGameState(4)
 
 
     def toggle_player(self):
@@ -255,9 +254,9 @@ class PlayerInterface(PyNetgamesServerListener):
         else:
             self.current_player_id = 0
         if self.current_player_id == self.local_player_id:
-            self.game_state = 2
+            self.board.setGameState(2)
         else:
-            self.game_state = 3
+            self.board.setGameState(3)
 
     # ----------------------- Pynetgames ----------------------------------
 
@@ -266,11 +265,11 @@ class PlayerInterface(PyNetgamesServerListener):
         self.server_proxy.add_listener(self)
 
     def send_connect(self):  # Pyng use case "send connect"
-        if self.game_state == 1:
+        if self.board.getGameState() == 1:
             self.server_proxy.send_connect("wss://py-netgames-server.fly.dev")
 
     def send_disconnect(self):  # Pyng use case "send connect"
-        if self.game_state == 1:
+        if self.board.getGameState() == 1:
             self.server_proxy.send_disconnect()
 
     def send_match(self):  # Pyng use case "send match"
@@ -300,11 +299,11 @@ class PlayerInterface(PyNetgamesServerListener):
         if self.local_player_id == 0:
             self.message_label.config(text="Você começa")
             self.remote_player_id = 1
-            self.game_state = 2
+            self.board.setGameState(2)
         else:
             self.message_label.config(text="O adversário começa")
             self.remote_player_id = 0
-            self.game_state = 3
+            self.board.setGameState(3)
 
     def receive_move(self, message):
         for i in range(len(self.hexagon_colors)):
@@ -333,7 +332,7 @@ class PlayerInterface(PyNetgamesServerListener):
             self.message_label.config(text="enviando movimento")
             self.server_proxy.send_move(self.match_id, {"board": self.hexagon_colors})
             self.toggle_player()
-            if self.game_state == 3:
+            if self.board.getGameState() == 3:
                 self.message_label.config(text="Vez do adversário")
 
 
