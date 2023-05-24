@@ -37,10 +37,6 @@ class PlayerInterface(PyNetgamesServerListener):
         self.local_player = Jogador('#f55142', self.local_player_id, '#f54290')
         self.remote_player = Jogador('#4260f5', self.remote_player_id, '#4290f5')
         self.COLORS = {
-            'player_1': '#4260f5',
-            'player_1_selected': '#4290f5',
-            'player_0': '#f55142',
-            'player_0_selected': '#f54290',
             'inner_adjacent': '#55be4e',
             'outer_adjacent': '#cb7409',
             'outline': '#303030',
@@ -50,11 +46,19 @@ class PlayerInterface(PyNetgamesServerListener):
         self.initialize()
 
 
-    def getCorJogadorVez(self):
-        if self.local_player_id == 0:
-            return self.local_player.getColor()
+    def getCorJogadorVez(self, swap=False):
+        if swap == False:
+            if self.local_player_id == 0:
+                return self.local_player.getColor()
+            else:
+                return self.remote_player.getColor()
         else:
-            return self.remote_player.getColor()
+            if self.local_player_id == 0:
+                return self.remote_player.getColor()
+            else:
+                return self.local_player.getColor()
+
+
     
     def getCorSelectedJogadorVez(self):
         if self.local_player_id == 0:
@@ -161,12 +165,12 @@ class PlayerInterface(PyNetgamesServerListener):
                 self.board.hexagon_colors[i] = self.getCorJogadorVez()
                 self.canvas.itemconfig(self.hexagons[i], fill=self.getCorJogadorVez())
 
-            if self.hexagon_colors[i] == self.COLORS[f'player_{self.remote_player_id}_selected']:
-                self.hexagon_colors[i] = self.COLORS[f'player_{self.remote_player_id}']
-                self.board.hexagon_colors[i] = self.COLORS[f'player_{self.remote_player_id}']
+            if self.hexagon_colors[i] == self.getCorSelectedJogadorVez():
+                self.hexagon_colors[i] = self.getCorJogadorVez()
+                self.board.hexagon_colors[i] = self.getCorJogadorVez()
 
 
-                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS[f'player_{self.remote_player_id}'])
+                self.canvas.itemconfig(self.hexagons[i], fill=self.getCorJogadorVez())
 
     def select_hexagon(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
@@ -218,11 +222,11 @@ class PlayerInterface(PyNetgamesServerListener):
         hexagon_index = self.hexagons.index(hexagon)
         inner_adjacent_hexagons = self.board.get_adjacent_hexagons(hexagon_index)
         for i in inner_adjacent_hexagons:
-            if self.hexagon_colors[i] == self.COLORS[f'player_{self.remote_player_id}']:
+            if self.hexagon_colors[i] == self.getCorJogadorVez(True):
                 self.hexagon_colors[i] = self.getCorJogadorVez()
                 self.board.hexagon_colors[i] = self.getCorJogadorVez()
-
                 self.canvas.itemconfig(self.hexagons[i], fill=self.getCorJogadorVez())
+
 
     def check_game_over(self):
         self.clean_map()
