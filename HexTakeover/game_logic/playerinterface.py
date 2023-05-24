@@ -1,4 +1,3 @@
-import math
 import tkinter as tk
 from typing import Dict
 from py_netgames_client.tkinter_client.PyNetgamesServerProxy import PyNetgamesServerProxy
@@ -148,8 +147,6 @@ class PlayerInterface(PyNetgamesServerListener):
         elif self.board.getGameState() == 2:
             cor = self.canvas.itemcget(hexagon, 'fill')
             if cor == self.getCorJogadorVez() or self.getCorSelectedJogadorVez():
-                self.message_label.config(text="{}".format(self.local_player_id))
-
                 self.select_hexagon(hexagon)
             if cor == self.COLORS['inner_adjacent'] or cor == self.COLORS['outer_adjacent']:
                 if cor == self.COLORS['inner_adjacent']:
@@ -171,6 +168,7 @@ class PlayerInterface(PyNetgamesServerListener):
         for i in range(len(self.hexagon_colors)):
             if self.hexagon_colors[i] == self.COLORS['inner_adjacent'] or self.hexagon_colors[i] == self.COLORS['outer_adjacent']:
                 self.hexagon_colors[i] = self.COLORS['unselected']
+                self.board.hexagon_colors[i] = self.COLORS['unselected']
                 self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS['unselected'])
 
             if self.hexagon_colors[i] == self.getCorSelectedJogadorVez():
@@ -202,8 +200,7 @@ class PlayerInterface(PyNetgamesServerListener):
             self.hexagon_colors[hexagon_index] = self.getCorSelectedJogadorVez()
             self.board.hexagon_colors[hexagon_index] = self.getCorSelectedJogadorVez()
 
-            self.canvas.itemconfig(self.hexagons[hexagon_index],
-                                   fill=self.getCorSelectedJogadorVez())
+            self.canvas.itemconfig(self.hexagons[hexagon_index], fill=self.getCorSelectedJogadorVez())
 
             self.selected_hexagon = hexagon_index
         elif hexagon_color == self.getCorSelectedJogadorVez():
@@ -281,7 +278,6 @@ class PlayerInterface(PyNetgamesServerListener):
 
     def receive_disconnect(self):  # Pyng use case "receive disconnect"
         self.message_label.config(text="desconectado")
-        self.send_connect()
         pass
 
     def receive_error(self, error):  # Pyng use case "receive error"

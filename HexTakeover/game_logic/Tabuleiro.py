@@ -1,6 +1,4 @@
-import math
-import tkinter as tk
-from typing import Dict
+from typing import Dict, Self
 
 class Tabuleiro:
     # constants
@@ -67,7 +65,7 @@ class Tabuleiro:
         print(adjacent_hexagons)
         return adjacent_hexagons
 
-    def checkGameOver(self, corRemoto, corLocal) -> (str, int):
+    def checkGameOver(self, corRemoto, corLocal):
         self.cont_j0 = 0
         self.cont_j1 = 0
         self.cont_jog_j0 = 0
