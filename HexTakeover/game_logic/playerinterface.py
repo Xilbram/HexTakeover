@@ -35,11 +35,11 @@ class PlayerInterface(PyNetgamesServerListener):
         self.local_player = Jogador('#f55142', self.local_player_id, '#f54290')
         self.remote_player = Jogador('#4260f5', self.remote_player_id, '#4290f5')
         self.COLORS = {
-            'inner_adjacent': '#55be4e',
-            'outer_adjacent': '#cb7409',
-            'outline': '#303030',
-            'unselected': '#ffffff',
-            'out_of_map': '#303030'
+        'inner_adjacent': '#55be4e',
+        'outer_adjacent': '#cb7409',
+        'outline': '#303030',
+        'unselected': '#ffffff',
+        'out_of_map': '#303030'
         }
         self.initialize()
 
@@ -84,7 +84,6 @@ class PlayerInterface(PyNetgamesServerListener):
 
     def menu_bar(self, state):
         menu_bar = tk.Menu(self.root)
-        # Adicionar os botões ao menu e definir o estado com base na variável de controle
         menu_bar.add_cascade(label="Conectar ao servidor", command=self.send_connect, state='normal' if state else 'disabled')
         menu_bar.add_cascade(label="Desconectar", command=self.send_disconnect, state='normal' if state else 'disabled')
         self.root.config(menu=menu_bar)
@@ -148,7 +147,7 @@ class PlayerInterface(PyNetgamesServerListener):
             if cor == self.COLORS['inner_adjacent'] or cor == self.COLORS['outer_adjacent']:
                 if cor == self.COLORS['inner_adjacent']:
                     self.clone(hexagon)
-                elif cor == self.COLORS['outer_adjacent']:
+                else:
                     self.jump(hexagon)
                 self.flip(hexagon)
                 self.send_move()
@@ -213,11 +212,9 @@ class PlayerInterface(PyNetgamesServerListener):
         hexagon_index = self.hexagons.index(hexagon)
         self.hexagon_colors[hexagon_index] = self.get_cor_jogador_vez()
         self.board.hexagon_colors[hexagon_index] = self.get_cor_jogador_vez()
-
         self.canvas.itemconfig(hexagon, fill=self.get_cor_jogador_vez())
         self.hexagon_colors[self.selected_hexagon] = self.COLORS['unselected']
         self.board.hexagon_colors[self.selected_hexagon] = self.COLORS['unselected']
-
         self.canvas.itemconfig(self.hexagons[self.selected_hexagon], fill=self.COLORS['unselected'])
 
     def flip(self, hexagon):
@@ -282,9 +279,9 @@ class PlayerInterface(PyNetgamesServerListener):
         self.set_message("Erro no sistema")
 
     def receive_match(self, match):  # Pyng use case "receive match"
-        print('*************** PARTIDA INICIADA *******************')
-        print('*************** ORDEM: ', match.position)
-        print('*************** match_id: ', match.match_id)
+#        print('*************** PARTIDA INICIADA *******************')
+#        print('*************** ORDEM: ', match.position)
+#        print('*************** match_id: ', match.match_id)
         self.game_running = True
         self.menu_bar(False)
         self.match_id = match.match_id
