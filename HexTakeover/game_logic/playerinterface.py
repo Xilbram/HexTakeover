@@ -140,8 +140,7 @@ class PlayerInterface(PyNetgamesServerListener):
     def on_hexagon_clicked(self, hexagon):
         state = self.board.get_game_state()
         if state == 1:
-            self.message_label.config(text="Aguarde o início da partida")
-
+            self.set_message("Aguarde o início da partida")
         elif state == 2:
             cor = self.canvas.itemcget(hexagon, 'fill')
             if cor == self.get_cor_jogador_vez() or self.get_cor_selecionada_jogador_vez():
@@ -155,9 +154,13 @@ class PlayerInterface(PyNetgamesServerListener):
                 self.send_move()
                 self.clean_map()
         elif state == 3:
-            self.message_label.config(text="Aguarde a jogada do adversário")
+            self.set_message("Aguarde a jogada do adversário")
         elif state ==4:
-            self.message_label.config(text="A partida acabou, feche o jogo")
+            self.set_message("A partida acabou, feche o jogo")
+        elif state ==5:
+            self.set_message("Você está desconectado")
+        elif state ==6:
+            self.set_message("Tivemos um erro no servidor, feche o jogo")
 
     def clean_map(self):
         for i in range(len(self.hexagon_colors)):
@@ -232,9 +235,13 @@ class PlayerInterface(PyNetgamesServerListener):
         resultado = self.board.check_game_over(self.remote_player.get_color(), self.local_player.get_color())
         if self.board.get_game_state()==4:
             self.end_game = True
-            message = "Jogador {} venceu com {} pontos".format(resultado[0], resultado[1])
-            self.message_label.config(text=message)
+            self.game_running = False
+            winner = "Jogador {} venceu com {} pontos".format(resultado[0], resultado[1])
+            self.set_message(winner)
 
+    def set_message(self, texto):
+        self.message = texto
+        self.message_label.config(text=self.message) 
 
     def toggle_player(self):
         if self.current_player_id == 0:
@@ -262,14 +269,17 @@ class PlayerInterface(PyNetgamesServerListener):
         self.server_proxy.send_match(2)
 
     def receive_connection_success(self):  # Pyng use case "receive connection"
-        self.message_label.config(text="Conectado")
+        self.set_message("Conectado")
         self.send_match()
 
     def receive_disconnect(self):  # Pyng use case "receive disconnect"
-        self.message_label.config(text="desconectado")
+        self.board.set_game_state(5)
+        self.game_running = False 
+        self.set_message("desconectado")
 
     def receive_error(self, error):  # Pyng use case "receive error"
-        self.message_label.config(text="Erro no sistema")
+        self.board.set_game_state(6)
+        self.set_message("Erro no sistema")
 
     def receive_match(self, match):  # Pyng use case "receive match"
         print('*************** PARTIDA INICIADA *******************')
@@ -282,11 +292,11 @@ class PlayerInterface(PyNetgamesServerListener):
         if self.local_player_id == 0:
             self.remote_player_id = 1
             self.board.set_game_state(2)
-            self.message_label.config(text="Você começa")
+            self.set_message("Você começa")
         else:
             self.remote_player_id = 0
             self.board.set_game_state(3)
-            self.message_label.config(text="O adversário começa")
+            self.set_message("O adversário começa")
 
     def receive_move(self, message):
         for i in range(len(self.hexagon_colors)):
@@ -297,7 +307,7 @@ class PlayerInterface(PyNetgamesServerListener):
         self.avaliar_encerramento()
         if self.end_game == False:
             self.toggle_player()
-            self.message_label.config(text="É a sua vez de jogar")
+            self.set_message("É a sua vez de jogar")
 
     def receive_move_sent_success(self):
         pass
@@ -312,7 +322,7 @@ class PlayerInterface(PyNetgamesServerListener):
             self.server_proxy.send_move(self.match_id, {"board": self.hexagon_colors})
         else:
             self.toggle_player()
-            self.message_label.config(text="Vez do adversário")
+            self.set_message("Vez do adversário")
             self.server_proxy.send_move(self.match_id, {"board": self.hexagon_colors})
 
 
