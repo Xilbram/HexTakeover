@@ -25,7 +25,6 @@ class PlayerInterface(PyNetgamesServerListener):
         self.genHexagon = Hexagono()
         self.hexagons = []
         self.hexagon_colors = []
-        self.debug = False
         self.selected_hexagon = None
         self.canvas = None
         self.local_player_id = None
@@ -140,29 +139,21 @@ class PlayerInterface(PyNetgamesServerListener):
 
     def on_hexagon_clicked(self, hexagon):
         state = self.board.get_game_state()
-        print(state)
         if state == 1:
             self.message_label.config(text="Aguarde o início da partida")
 
         elif state == 2:
             cor = self.canvas.itemcget(hexagon, 'fill')
             if cor == self.get_cor_jogador_vez() or self.get_cor_selecionada_jogador_vez():
-                print("self.select_hexagon(hexagon)")
                 self.select_hexagon(hexagon)
             if cor == self.COLORS['inner_adjacent'] or cor == self.COLORS['outer_adjacent']:
-                print("adjacent")
                 if cor == self.COLORS['inner_adjacent']:
                     self.clone(hexagon)
                 elif cor == self.COLORS['outer_adjacent']:
                     self.jump(hexagon)
                 self.flip(hexagon)
                 self.send_move()
-
-                if self.debug:
-                    print(self.hexagon_colors)
-                    self.clean_map()
-                    print("--------------------")
-                    print(self.hexagon_colors)
+                self.clean_map()
         elif state == 3:
             self.message_label.config(text="Aguarde a jogada do adversário")
         elif state ==4:
@@ -191,7 +182,6 @@ class PlayerInterface(PyNetgamesServerListener):
         if hexagon_color == self.get_cor_jogador_vez():
             self.clean_map()
             possibles = self.board.get_possible(hexagon_index)
-            print(self.hexagon_colors)
             for d in range(len(possibles[1])):
                 self.hexagon_colors[possibles[1][d]] = self.COLORS['outer_adjacent']
                 self.board.hexagon_colors[possibles[1][d]] = self.COLORS['outer_adjacent']
@@ -201,7 +191,6 @@ class PlayerInterface(PyNetgamesServerListener):
                 self.hexagon_colors[possibles[0][c]] = self.COLORS['inner_adjacent']
                 self.board.hexagon_colors[possibles[0][c]] = self.COLORS['inner_adjacent']
                 self.canvas.itemconfig(self.hexagons[possibles[0][c]], fill=self.COLORS['inner_adjacent'])
-            print(self.hexagon_colors)
             self.hexagon_colors[hexagon_index] = self.get_cor_selecionada_jogador_vez()
             self.board.hexagon_colors[hexagon_index] = self.get_cor_selecionada_jogador_vez()
             self.canvas.itemconfig(self.hexagons[hexagon_index], fill=self.get_cor_selecionada_jogador_vez())
@@ -239,14 +228,12 @@ class PlayerInterface(PyNetgamesServerListener):
 
 
     def avaliar_encerramento(self):
-        self.clean_map()
         # resultado é uma tupla str int
         resultado = self.board.check_game_over(self.remote_player.get_color(), self.local_player.get_color())
-        if resultado != None:
+        if self.board.get_game_state()==4:
+            self.end_game = True
             message = "Jogador {} venceu com {} pontos".format(resultado[0], resultado[1])
             self.message_label.config(text=message)
-            self.end_game = True
-            self.board.set_game_state(4)
 
 
     def toggle_player(self):
@@ -305,7 +292,6 @@ class PlayerInterface(PyNetgamesServerListener):
         for i in range(len(self.hexagon_colors)):
             self.hexagon_colors[i] = message.payload['board'][i]
             self.board.hexagon_colors[i] = message.payload['board'][i]
-
             self.canvas.itemconfig(self.hexagons[i], fill=message.payload['board'][i])
 
         self.avaliar_encerramento()
@@ -325,10 +311,8 @@ class PlayerInterface(PyNetgamesServerListener):
         if self.end_game:
             self.server_proxy.send_move(self.match_id, {"board": self.hexagon_colors})
         else:
-            self.message_label.config(text="enviando movimento")
-            self.server_proxy.send_move(self.match_id, {"board": self.hexagon_colors})
             self.toggle_player()
-            if self.board.get_game_state() == 3:
-                self.message_label.config(text="Vez do adversário")
+            self.message_label.config(text="Vez do adversário")
+            self.server_proxy.send_move(self.match_id, {"board": self.hexagon_colors})
 
 
