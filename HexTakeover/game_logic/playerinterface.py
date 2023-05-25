@@ -8,7 +8,6 @@ from .Tabuleiro import Tabuleiro
 from .Hexagono import Hexagono
 from .Jogador import Jogador
 
-
 class PlayerInterface(PyNetgamesServerListener):
     # constants
     MAP_WIDTH = 20
@@ -258,6 +257,7 @@ class PlayerInterface(PyNetgamesServerListener):
 
     def receive_error(self, error):  # Pyng use case "receive error"
         self.board.set_game_state(6)
+        self.game_running = False 
         self.set_message("Erro no sistema")
 
     def receive_match(self, match):  # Pyng use case "receive match"
