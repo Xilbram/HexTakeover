@@ -1,4 +1,4 @@
-from typing import Dict, Self
+from typing import Dict
 
 class Tabuleiro:
     # constants

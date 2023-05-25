@@ -164,19 +164,13 @@ class PlayerInterface(PyNetgamesServerListener):
     def clean_map(self):
         for i in range(len(self.hexagon_colors)):
             if self.hexagon_colors[i] == self.COLORS['inner_adjacent'] or self.hexagon_colors[i] == self.COLORS['outer_adjacent']:
-                self.hexagon_colors[i] = self.COLORS['unselected']
-                self.board.hexagon_colors[i] = self.COLORS['unselected']
-                self.canvas.itemconfig(self.hexagons[i], fill=self.COLORS['unselected'])
+                self.update_hex(i, self.COLORS['unselected'])
 
             if self.hexagon_colors[i] == self.get_cor_selecionada_jogador_vez():
-                self.hexagon_colors[i] = self.get_cor_jogador_vez()
-                self.board.hexagon_colors[i] = self.get_cor_jogador_vez()
-                self.canvas.itemconfig(self.hexagons[i], fill=self.get_cor_jogador_vez())
+                self.update_hex(i, self.get_cor_jogador_vez())
 
             if self.hexagon_colors[i] == self.get_cor_selecionada_jogador_vez(True):
-                self.hexagon_colors[i] = self.get_cor_jogador_vez(True)
-                self.board.hexagon_colors[i] = self.get_cor_jogador_vez(True)
-                self.canvas.itemconfig(self.hexagons[i], fill=self.get_cor_jogador_vez(True))
+                self.update_hex(i, self.get_cor_jogador_vez(True))
 
     def select_hexagon(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
@@ -185,18 +179,10 @@ class PlayerInterface(PyNetgamesServerListener):
             self.clean_map()
             possibles = self.board.get_possible(hexagon_index)
             for d in range(len(possibles[1])):
-                self.hexagon_colors[possibles[1][d]] = self.COLORS['outer_adjacent']
-                self.board.hexagon_colors[possibles[1][d]] = self.COLORS['outer_adjacent']
-                self.canvas.itemconfig(self.hexagons[possibles[1][d]], fill=self.COLORS['outer_adjacent'])
-
+                self.update_hex(possibles[1][d], self.COLORS['outer_adjacent'])
             for c in range(len(possibles[0])):
-                self.hexagon_colors[possibles[0][c]] = self.COLORS['inner_adjacent']
-                self.board.hexagon_colors[possibles[0][c]] = self.COLORS['inner_adjacent']
-                self.canvas.itemconfig(self.hexagons[possibles[0][c]], fill=self.COLORS['inner_adjacent'])
-            self.hexagon_colors[hexagon_index] = self.get_cor_selecionada_jogador_vez()
-            self.board.hexagon_colors[hexagon_index] = self.get_cor_selecionada_jogador_vez()
-            self.canvas.itemconfig(self.hexagons[hexagon_index], fill=self.get_cor_selecionada_jogador_vez())
-
+                self.update_hex(possibles[0][c], self.COLORS['inner_adjacent'])
+            self.update_hex(hexagon_index, self.get_cor_selecionada_jogador_vez())
             self.selected_hexagon = hexagon_index
         elif hexagon_color == self.get_cor_selecionada_jogador_vez():
             self.selected_hexagon = None
@@ -204,28 +190,24 @@ class PlayerInterface(PyNetgamesServerListener):
 
     def clone(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
-        self.hexagon_colors[hexagon_index] = self.get_cor_jogador_vez()
-        self.board.hexagon_colors[hexagon_index] = self.get_cor_jogador_vez()
-        self.canvas.itemconfig(hexagon, fill=self.get_cor_jogador_vez())
+        self.update_hex(hexagon_index, self.get_cor_jogador_vez())
 
     def jump(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
-        self.hexagon_colors[hexagon_index] = self.get_cor_jogador_vez()
-        self.board.hexagon_colors[hexagon_index] = self.get_cor_jogador_vez()
-        self.canvas.itemconfig(hexagon, fill=self.get_cor_jogador_vez())
-        self.hexagon_colors[self.selected_hexagon] = self.COLORS['unselected']
-        self.board.hexagon_colors[self.selected_hexagon] = self.COLORS['unselected']
-        self.canvas.itemconfig(self.hexagons[self.selected_hexagon], fill=self.COLORS['unselected'])
+        self.update_hex(hexagon_index, self.get_cor_jogador_vez())
+        self.update_hex(self.selected_hexagon, self.COLORS['unselected'])
 
     def flip(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
         inner_adjacent_hexagons = self.board.get_adjacent_hexagons(hexagon_index)
         for i in inner_adjacent_hexagons:
             if self.hexagon_colors[i] == self.get_cor_jogador_vez(True):
-                self.hexagon_colors[i] = self.get_cor_jogador_vez()
-                self.board.hexagon_colors[i] = self.get_cor_jogador_vez()
-                self.canvas.itemconfig(self.hexagons[i], fill=self.get_cor_jogador_vez())
+                self.update_hex(i, self.get_cor_jogador_vez())
 
+    def update_hex(self, index, state):
+        self.hexagon_colors[index] = state
+        self.board.hexagon_colors[index] = state
+        self.canvas.itemconfig(self.hexagons[index], fill=state)
 
     def avaliar_encerramento(self):
         # resultado é uma tupla str int
@@ -297,9 +279,7 @@ class PlayerInterface(PyNetgamesServerListener):
 
     def receive_move(self, message):
         for i in range(len(self.hexagon_colors)):
-            self.hexagon_colors[i] = message.payload['board'][i]
-            self.board.hexagon_colors[i] = message.payload['board'][i]
-            self.canvas.itemconfig(self.hexagons[i], fill=message.payload['board'][i])
+            self.update_hex(i, message.payload['board'][i])
 
         self.avaliar_encerramento()
         if self.end_game == False:
