@@ -6,7 +6,6 @@ from py_netgames_client.tkinter_client.PyNetgamesServerListener import PyNetgame
 from py_netgames_model.messaging.message import MatchStartedMessage, MoveMessage
 from .Tabuleiro import Tabuleiro
 from .Hexagono import Hexagono
-from .Jogador import Jogador
 
 class PlayerInterface(PyNetgamesServerListener):
     # constants
@@ -26,13 +25,8 @@ class PlayerInterface(PyNetgamesServerListener):
         self.hexagon_colors = []
         self.selected_hexagon = None
         self.canvas = None
-        self.local_player_id = None
-        self.remote_player_id = None
-        self.current_player_id = 0
         self.game_running = False
         self.end_game = False
-        self.local_player = Jogador('#f55142', self.local_player_id, '#f54290')
-        self.remote_player = Jogador('#4260f5', self.remote_player_id, '#4290f5')
         self.COLORS = {
         'inner_adjacent': '#55be4e',
         'outer_adjacent': '#cb7409',
@@ -237,7 +231,6 @@ class PlayerInterface(PyNetgamesServerListener):
         self.game_running = True
         self.menu_bar(False)
         self.match_id = match.match_id
-        self.local_player_id = match.position
         self.board.local_player_id = match.position
         if self.board.local_player_id == 0:
             self.board.remote_player_id = 1
