@@ -5,7 +5,6 @@ from py_netgames_client.tkinter_client.PyNetgamesServerListener import PyNetgame
 from py_netgames_client.tkinter_client.PyNetgamesServerListener import PyNetgamesServerListener
 from py_netgames_model.messaging.message import MatchStartedMessage, MoveMessage
 from .Tabuleiro import Tabuleiro
-from .Hexagono import Hexagono
 
 class PlayerInterface(PyNetgamesServerListener):
     # constants
@@ -20,7 +19,6 @@ class PlayerInterface(PyNetgamesServerListener):
         self.message_label = None
         self.message = "Iniciando o Jogo"
         self.board = Tabuleiro()
-        self.genHexagon = Hexagono()
         self.hexagons = []
         self.hexagon_colors = []
         self.selected_hexagon = None
