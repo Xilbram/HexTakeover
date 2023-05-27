@@ -93,24 +93,24 @@ class PlayerInterface(PyNetgamesServerListener):
     def init_positions(self):
         for i in range(self.MAP_WIDTH):
             for j in range(self.MAP_HEIGHT):
-                x = i * 1.5 * self.genHexagon.get_side_length()
-                y = j * (self.genHexagon.get_hex_height() * 2) + ((i % 2) * self.genHexagon.get_hex_height())
+                x = i * 1.5 * self.board.genHexagon.get_side_length()
+                y = j * (self.board.genHexagon.get_hex_height() * 2) + ((i % 2) * self.board.genHexagon.get_hex_height())
                 outline_color = self.COLORS['outline']
                 player_positions = {
-                    (3, 3): self.local_player.get_color(),
-                    (3, 4): self.local_player.get_color(),
-                    (4, 3): self.local_player.get_color(),
-                    (4, 4): self.local_player.get_color(),
-                    (4, 5): self.local_player.get_color(),
-                    (5, 3): self.local_player.get_color(),
-                    (5, 4): self.local_player.get_color(),
-                    (13, 3): self.remote_player.get_color(),
-                    (13, 4): self.remote_player.get_color(),
-                    (14, 3): self.remote_player.get_color(),
-                    (14, 4): self.remote_player.get_color(),
-                    (14, 5): self.remote_player.get_color(),
-                    (15, 3): self.remote_player.get_color(),
-                    (15, 4): self.remote_player.get_color()
+                    (3, 3): self.board.local_player.get_color(),
+                    (3, 4): self.board.local_player.get_color(),
+                    (4, 3): self.board.local_player.get_color(),
+                    (4, 4): self.board.local_player.get_color(),
+                    (4, 5): self.board.local_player.get_color(),
+                    (5, 3): self.board.local_player.get_color(),
+                    (5, 4): self.board.local_player.get_color(),
+                    (13, 3): self.board.remote_player.get_color(),
+                    (13, 4): self.board.remote_player.get_color(),
+                    (14, 3): self.board.remote_player.get_color(),
+                    (14, 4): self.board.remote_player.get_color(),
+                    (14, 5): self.board.remote_player.get_color(),
+                    (15, 3): self.board.remote_player.get_color(),
+                    (15, 4): self.board.remote_player.get_color()
                 }
                 if (i, j) in player_positions:
                     fill_color = player_positions[(i, j)]
@@ -121,12 +121,12 @@ class PlayerInterface(PyNetgamesServerListener):
                     fill_color = self.COLORS['out_of_map']
                 # represent the vertices (start at the left vertex and continue counterclockwise)
                 vertices = [
-                    x - self.genHexagon.get_side_length(), y,
-                    x - self.genHexagon.get_side_length() / 2, y + self.genHexagon.get_hex_height(),
-                    x + self.genHexagon.get_side_length() / 2, y + self.genHexagon.get_hex_height(),
-                    x + self.genHexagon.get_side_length(), y,
-                    x + self.genHexagon.get_side_length() / 2, y - self.genHexagon.get_hex_height(),
-                    x - self.genHexagon.get_side_length() / 2, y - self.genHexagon.get_hex_height()
+                    x - self.board.genHexagon.get_side_length(), y,
+                    x - self.board.genHexagon.get_side_length() / 2, y + self.board.genHexagon.get_hex_height(),
+                    x + self.board.genHexagon.get_side_length() / 2, y + self.board.genHexagon.get_hex_height(),
+                    x + self.board.genHexagon.get_side_length(), y,
+                    x + self.board.genHexagon.get_side_length() / 2, y - self.board.genHexagon.get_hex_height(),
+                    x - self.board.genHexagon.get_side_length() / 2, y - self.board.genHexagon.get_hex_height()
                 ]
                 hexagon = self.canvas.create_polygon(vertices, fill=fill_color, outline=outline_color)
                 self.hexagons.append(hexagon)
@@ -214,7 +214,7 @@ class PlayerInterface(PyNetgamesServerListener):
 
     def avaliar_encerramento(self):
         # resultado é uma tupla str int
-        resultado = self.board.check_game_over(self.remote_player.get_color(), self.local_player.get_color())
+        resultado = self.board.check_game_over(self.board.remote_player.get_color(), self.board.local_player.get_color())
         if self.board.get_game_state()==4:
             self.end_game = True
             self.game_running = False
