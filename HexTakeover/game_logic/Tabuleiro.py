@@ -44,22 +44,18 @@ class Tabuleiro:
     def get_adjacent_hexagons(self, hexagon_index):
         adjacent_hexagons = []
         if hexagon_index // self.MAP_HEIGHT % 2 == 0:
-            if hexagon_index - 1 >= 0:
                 adjacent_hexagons.append(hexagon_index - 1)
                 adjacent_hexagons.append(hexagon_index - self.MAP_HEIGHT)
-                adjacent_hexagons.append(hexagon_index - (self.MAP_HEIGHT + 1))
-            if hexagon_index + 1 < len(self.hexagons):
                 adjacent_hexagons.append(hexagon_index + 1)
                 adjacent_hexagons.append(hexagon_index + self.MAP_HEIGHT)
+                adjacent_hexagons.append(hexagon_index - (self.MAP_HEIGHT + 1))
                 adjacent_hexagons.append(hexagon_index + (self.MAP_HEIGHT - 1))
         else:
-            if hexagon_index - 1 >= 0:
                 adjacent_hexagons.append(hexagon_index - 1)
                 adjacent_hexagons.append(hexagon_index - self.MAP_HEIGHT)
-                adjacent_hexagons.append(hexagon_index - (self.MAP_HEIGHT - 1))
-            if hexagon_index + 1 < len(self.hexagons):
                 adjacent_hexagons.append(hexagon_index + 1)
                 adjacent_hexagons.append(hexagon_index + self.MAP_HEIGHT)
+                adjacent_hexagons.append(hexagon_index - (self.MAP_HEIGHT - 1))
                 adjacent_hexagons.append(hexagon_index + (self.MAP_HEIGHT + 1))
         return adjacent_hexagons
 
@@ -72,27 +68,17 @@ class Tabuleiro:
             possibles = self.get_possible(self.hexagons[k])
             if self.hexagon_colors[k] == corRemoto:
                 self.cont_hex_j0 += 1
-                if self.cont_jogadas_j0 == 0:
-                    self.cont_jogadas_j0 = len(possibles[0]) + len(possibles[1])
+                self.cont_jogadas_j0 += len(possibles[k])
             if self.hexagon_colors[k] == corLocal:
                 self.cont_hex_j1 += 1
-                if self.cont_jogadas_j1 == 0:
-                    self.cont_jogadas_j1 = len(possibles[0]) + len(possibles[1])
-        if self.cont_hex_j0 + self.cont_hex_j1 == 75:
+                self.cont_jogadas_j1 += len(possibles[k])
+
+        if self.cont_jogadas_j1 == 0 or self.cont_jogadas_j0 == 0:
+            self.game_state = 4
             if self.cont_hex_j0 < self.cont_hex_j1:
-                self.game_state = 4
                 return ("Vermelho", self.cont_hex_j1)
             else:
-                self.game_state = 4
                 return ("Azul", self.cont_hex_j0)
-
-        elif self.cont_hex_j0 == 0 or self.cont_jogadas_j0 == 0:
-            self.game_state = 4
-            return ("Vermelho", self.cont_hex_j1)
-
-        elif self.cont_hex_j1 == 0 or self.cont_jogadas_j1 == 0:
-            self.game_state = 4
-            return ("Azul", self.cont_hex_j0)
         return None
 
 
