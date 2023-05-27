@@ -200,15 +200,6 @@ class PlayerInterface(PyNetgamesServerListener):
         self.message = texto
         self.message_label.config(text=self.message) 
 
-    def toggle_player(self):
-        if self.current_player_id == 0:
-            self.current_player_id = 1
-        else:
-            self.current_player_id = 0
-        if self.current_player_id == self.local_player_id:
-            self.board.set_game_state(2)
-        else:
-            self.board.set_game_state(3)
 
     # ----------------------- Pynetgames ----------------------------------
 
@@ -248,12 +239,12 @@ class PlayerInterface(PyNetgamesServerListener):
         self.match_id = match.match_id
         self.local_player_id = match.position
         self.board.local_player_id = match.position
-        if self.local_player_id == 0:
-            self.remote_player_id = 1
+        if self.board.local_player_id == 0:
+            self.board.remote_player_id = 1
             self.board.set_game_state(2)
             self.set_message("Você começa")
         else:
-            self.remote_player_id = 0
+            self.board.remote_player_id = 0
             self.board.set_game_state(3)
             self.set_message("O adversário começa")
 
@@ -263,7 +254,6 @@ class PlayerInterface(PyNetgamesServerListener):
 
         self.avaliar_encerramento()
         if self.end_game == False:
-            self.toggle_player()
             self.board.toggle_player()
             self.set_message("É a sua vez de jogar")
 
@@ -279,7 +269,6 @@ class PlayerInterface(PyNetgamesServerListener):
         if self.end_game:
             self.server_proxy.send_move(self.match_id, {"board": self.hexagon_colors})
         else:
-            self.toggle_player()
             self.board.toggle_player()
             self.set_message("Vez do adversário")
             self.server_proxy.send_move(self.match_id, {"board": self.hexagon_colors})
