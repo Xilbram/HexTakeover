@@ -1,4 +1,6 @@
 from typing import Dict
+from .Hexagono import Hexagono
+from .Jogador import Jogador
 
 class Tabuleiro:
     # constants
@@ -7,19 +9,48 @@ class Tabuleiro:
     def __init__(self):
         self.hexagons = []
         self.hexagon_colors = []
+        self.genHexagon = Hexagono()
         self.selected_hexagon = None
+
         self.game_state = 1
+
+        self.local_player_id = None
+        self.remote_player_id = None
+        self.local_player = Jogador('#f55142', self.local_player_id, '#f54290')
+        self.remote_player = Jogador('#4260f5', self.remote_player_id, '#4290f5')
+        self.current_player_id = 0
+
         self.COLORS = {
-            'player_1': '#4260f5',
-            'player_1_selected': '#4290f5',
-            'player_0': '#f55142',
-            'player_0_selected': '#f54290',
             'inner_adjacent': '#55be4e',
             'outer_adjacent': '#cb7409',
             'outline': '#303030',
             'unselected': '#ffffff',
             'out_of_map': '#303030'
         }
+
+    def get_cor_jogador_vez(self, swap=False):
+        if swap:
+            if self.local_player_id == 0:
+                return self.remote_player.get_color()
+            else:
+                return self.local_player.get_color()
+        else:
+            if self.local_player_id == 0:
+                return self.local_player.get_color()
+            else:
+                return self.remote_player.get_color()
+
+    def get_cor_selecionada_jogador_vez(self, swap=False):
+        if swap:
+            if self.local_player_id == 0:
+                return self.remote_player.get_color_selecao()
+            else:
+                return self.local_player.get_color_selecao()
+        else:
+            if self.local_player_id == 0:
+                return self.local_player.get_color_selecao()
+            else:
+                return self.remote_player.get_color_selecao()
 
     def get_game_state(self):
         return self.game_state
@@ -68,10 +99,10 @@ class Tabuleiro:
             possibles = self.get_possible(self.hexagons[k])
             if self.hexagon_colors[k] == corRemoto:
                 self.cont_hex_j0 += 1
-                self.cont_jogadas_j0 += len(possibles[k])
+                self.cont_jogadas_j0 += len(possibles)
             if self.hexagon_colors[k] == corLocal:
                 self.cont_hex_j1 += 1
-                self.cont_jogadas_j1 += len(possibles[k])
+                self.cont_jogadas_j1 += len(possibles)
 
         if self.cont_jogadas_j1 == 0 or self.cont_jogadas_j0 == 0:
             self.game_state = 4
@@ -79,6 +110,6 @@ class Tabuleiro:
                 return ("Vermelho", self.cont_hex_j1)
             else:
                 return ("Azul", self.cont_hex_j0)
-        return None
+
 
 
