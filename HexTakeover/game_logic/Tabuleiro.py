@@ -112,4 +112,13 @@ class Tabuleiro:
                 return ("Azul", self.cont_hex_j0)
 
 
+    def toggle_player(self):
+        if self.current_player_id == 0:
+            self.current_player_id = 1
+        else:
+            self.current_player_id = 0
+        if self.current_player_id == self.local_player_id:
+            self.set_game_state(2)
+        else:
+            self.set_game_state(3)
 

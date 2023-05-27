@@ -43,31 +43,6 @@ class PlayerInterface(PyNetgamesServerListener):
         self.initialize()
 
 
-    def get_cor_jogador_vez(self, swap=False):
-        if swap:
-            if self.local_player_id == 0:
-                return self.remote_player.get_color()
-            else:
-                return self.local_player.get_color()
-        else:
-            if self.local_player_id == 0:
-                return self.local_player.get_color()
-            else:
-                return self.remote_player.get_color()
-
-    
-    def get_cor_selecionada_jogador_vez(self, swap=False):
-        if swap:
-            if self.local_player_id == 0:
-                return self.remote_player.get_color_selecao()
-            else:
-                return self.local_player.get_color_selecao()
-        else:
-            if self.local_player_id == 0:
-                return self.local_player.get_color_selecao()
-            else:
-                return self.remote_player.get_color_selecao()
-
     def initialize(self):
         self.canvas = tk.Canvas(self.frame_game, width=1400, height=800)
         self.canvas.pack()
@@ -141,7 +116,7 @@ class PlayerInterface(PyNetgamesServerListener):
             self.set_message("Aguarde o início da partida")
         elif state == 2:
             cor = self.canvas.itemcget(hexagon, 'fill')
-            if cor == self.get_cor_jogador_vez() or self.get_cor_selecionada_jogador_vez():
+            if cor == self.board.get_cor_jogador_vez() or self.board.get_cor_selecionada_jogador_vez():
                 self.select_hexagon(hexagon)
 
             if cor == self.COLORS['inner_adjacent']:
@@ -169,43 +144,43 @@ class PlayerInterface(PyNetgamesServerListener):
             if self.hexagon_colors[i] == self.COLORS['inner_adjacent'] or self.hexagon_colors[i] == self.COLORS['outer_adjacent']:
                 self.update_hex(i, self.COLORS['unselected'])
 
-            if self.hexagon_colors[i] == self.get_cor_selecionada_jogador_vez():
-                self.update_hex(i, self.get_cor_jogador_vez())
+            if self.hexagon_colors[i] == self.board.get_cor_selecionada_jogador_vez():
+                self.update_hex(i, self.board.get_cor_jogador_vez())
 
-            if self.hexagon_colors[i] == self.get_cor_selecionada_jogador_vez(True):
-                self.update_hex(i, self.get_cor_jogador_vez(True))
+            if self.hexagon_colors[i] == self.board.get_cor_selecionada_jogador_vez(True):
+                self.update_hex(i, self.board.get_cor_jogador_vez(True))
 
     def select_hexagon(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
         hexagon_color = self.hexagon_colors[hexagon_index]
-        if hexagon_color == self.get_cor_jogador_vez():
+        if hexagon_color == self.board.get_cor_jogador_vez():
             self.clean_map()
             possibles = self.board.get_possible(hexagon_index)
             for d in range(len(possibles[1])):
                 self.update_hex(possibles[1][d], self.COLORS['outer_adjacent'])
             for c in range(len(possibles[0])):
                 self.update_hex(possibles[0][c], self.COLORS['inner_adjacent'])
-            self.update_hex(hexagon_index, self.get_cor_selecionada_jogador_vez())
+            self.update_hex(hexagon_index, self.board.get_cor_selecionada_jogador_vez())
             self.selected_hexagon = hexagon_index
-        elif hexagon_color == self.get_cor_selecionada_jogador_vez():
+        elif hexagon_color == self.board.get_cor_selecionada_jogador_vez():
             self.selected_hexagon = None
             self.clean_map()
 
     def clone(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
-        self.update_hex(hexagon_index, self.get_cor_jogador_vez())
+        self.update_hex(hexagon_index, self.board.get_cor_jogador_vez())
 
     def jump(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
-        self.update_hex(hexagon_index, self.get_cor_jogador_vez())
+        self.update_hex(hexagon_index, self.board.get_cor_jogador_vez())
         self.update_hex(self.selected_hexagon, self.COLORS['unselected'])
 
     def flip(self, hexagon):
         hexagon_index = self.hexagons.index(hexagon)
         inner_adjacent_hexagons = self.board.get_adjacent_hexagons(hexagon_index)
         for i in inner_adjacent_hexagons:
-            if self.hexagon_colors[i] == self.get_cor_jogador_vez(True):
-                self.update_hex(i, self.get_cor_jogador_vez())
+            if self.hexagon_colors[i] == self.board.get_cor_jogador_vez(True):
+                self.update_hex(i, self.board.get_cor_jogador_vez())
 
     def update_hex(self, index, state):
         self.hexagon_colors[index] = state
@@ -272,6 +247,7 @@ class PlayerInterface(PyNetgamesServerListener):
         self.menu_bar(False)
         self.match_id = match.match_id
         self.local_player_id = match.position
+        self.board.local_player_id = match.position
         if self.local_player_id == 0:
             self.remote_player_id = 1
             self.board.set_game_state(2)
@@ -288,6 +264,7 @@ class PlayerInterface(PyNetgamesServerListener):
         self.avaliar_encerramento()
         if self.end_game == False:
             self.toggle_player()
+            self.board.toggle_player()
             self.set_message("É a sua vez de jogar")
 
     def receive_move_sent_success(self):
@@ -303,6 +280,7 @@ class PlayerInterface(PyNetgamesServerListener):
             self.server_proxy.send_move(self.match_id, {"board": self.hexagon_colors})
         else:
             self.toggle_player()
+            self.board.toggle_player()
             self.set_message("Vez do adversário")
             self.server_proxy.send_move(self.match_id, {"board": self.hexagon_colors})
 
