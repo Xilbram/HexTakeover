@@ -104,20 +104,23 @@ class PlayerInterface(PyNetgamesServerListener):
             self.set_message("Aguarde o início da partida")
         elif state == 2:
             cor = self.canvas.itemcget(hexagon, 'fill')
-            if cor == self.board.get_cor_jogador_vez() or self.board.get_cor_selecionada_jogador_vez():
-                self.select_hexagon(hexagon)
+            if self.selected_hexagon==None:
+                if cor == self.board.get_cor_jogador_vez():
+                    self.select_hexagon(hexagon)
+            else:
+                if cor == self.board.get_cor_jogador_vez() or self.board.get_cor_selecionada_jogador_vez():
+                    self.select_hexagon(hexagon)
 
-            if cor == self.COLORS['inner_adjacent']:
-                self.clone(hexagon)
-                self.flip(hexagon)
-                self.send_move()
-                self.clean_map()
-            if cor == self.COLORS['outer_adjacent']:
-                self.jump(hexagon)
-                self.flip(hexagon)
-                self.send_move()
-                self.clean_map()
-            
+                if cor == self.COLORS['inner_adjacent']:
+                    self.clone(hexagon)
+                    self.flip(hexagon)
+                    self.send_move()
+                    self.clean_map()
+                if cor == self.COLORS['outer_adjacent']:
+                    self.jump(hexagon)
+                    self.flip(hexagon)
+                    self.send_move()
+                    self.clean_map()
         elif state == 3:
             self.set_message("Aguarde a jogada do adversário")
         elif state ==4:
